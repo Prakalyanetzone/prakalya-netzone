@@ -7,55 +7,73 @@
   <title>Staff Entry - Prakalya Netzone</title>
   <style>
     body {
-      font-family: Arial;
-      background: #eef3f9;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f4f9;
       padding: 20px;
+      margin: 0;
     }
     h1 {
       text-align: center;
       color: #0056d6;
+      margin-top: 20px;
     }
     .entry-box {
       max-width: 500px;
       margin: auto;
-      background: white;
-      padding: 20px;
+      background: #fff;
+      padding: 25px 30px;
       margin-top: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-top: 10px;
     }
     input, select, textarea, button {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 12px;
+      margin-top: 5px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-size: 15px;
     }
     button {
       background-color: #0056d6;
       color: white;
-      cursor: pointer;
+      border: none;
+      transition: background 0.3s;
     }
     button:hover {
-      background-color: #003eaa;
+      background-color: #0041aa;
     }
-    #logoutBtn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: red;
+    .logout-btn {
+      background-color: #e53935;
+      margin-top: 8px;
+    }
+    .logout-btn:hover {
+      background-color: #c62828;
+    }
+    .today-btn {
+      margin-top: -10px;
+      margin-bottom: 10px;
+      background-color: #4caf50;
+    }
+    .today-btn:hover {
+      background-color: #388e3c;
     }
   </style>
 </head>
 <body>
   <h1>PRAKALYA NETZONE</h1>
-  <button id="logoutBtn" onclick="logout()">🚪 Logout</button>
 
   <div class="entry-box">
     <form id="entryForm" onsubmit="submitForm(); return false;">
       <label>Date:</label>
       <input type="date" id="date" required />
+      <button type="button" class="today-btn" onclick="setToday()">📅 Today</button>
 
       <label>Wallet:</label>
       <select id="wallet" required>
@@ -75,12 +93,13 @@
       <input type="number" id="closing" required />
 
       <label>Note:</label>
-      <textarea id="note"></textarea>
+      <textarea id="note" rows="2"></textarea>
 
       <label>Staff Name:</label>
       <input type="text" id="staffName" required />
 
       <button type="submit">Submit</button>
+      <button type="button" class="logout-btn" onclick="logout()">🚪 Logout</button>
     </form>
   </div>
 
@@ -113,6 +132,7 @@
       .then(data => {
         alert("✅ Entry submitted successfully!");
         document.getElementById("entryForm").reset();
+        setToday(); // auto fill today's date again
       })
       .catch(err => {
         alert("❌ Failed to submit. Please try again.");
@@ -125,12 +145,16 @@
       window.location.href = "index.html";
     }
 
-    // Autofill today's date
+    function setToday() {
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("date").value = today;
+    }
+
     window.onload = () => {
       if (!sessionStorage.getItem("userCode")) {
         window.location.href = "index.html";
       }
-      document.getElementById("date").valueAsDate = new Date();
+      setToday();
     }
   </script>
 </body>
