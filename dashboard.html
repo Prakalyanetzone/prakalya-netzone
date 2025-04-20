@@ -5,84 +5,45 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Boss Dashboard - Prakalya Netzone</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial;
       background: #eef3f9;
-      margin: 0;
       padding: 20px;
     }
     h1 {
       text-align: center;
       color: #0056d6;
-      font-size: 28px;
     }
-    .filters {
-      max-width: 1100px;
+    .filters, .table-box {
+      max-width: 1000px;
       margin: auto;
-      background: #fff;
+      background: white;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .filters label, .filters input, .filters select {
+    input, select, button {
       margin: 5px;
-      font-size: 15px;
-    }
-    .filters input[type="date"],
-    .filters select {
       padding: 10px;
-      border-radius: 6px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-    }
-    .filters button {
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      margin: 5px;
-      cursor: pointer;
-      color: white;
-      font-weight: bold;
-    }
-    .filters button i {
-      margin-right: 5px;
-    }
-    .refresh { background-color: #007bff; }
-    .today   { background-color: #28a745; }
-    .print   { background-color: #17a2b8; }
-    .logout  { background-color: #dc3545; }
-    .filters #searchBar {
-      flex: 1 1 100%;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-    }
-    .table-box {
-      max-width: 1100px;
-      margin: 20px auto;
-      background: #fff;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.08);
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 15px;
+      margin-top: 15px;
     }
     th, td {
-      border: 1px solid #d0d0d0;
-      padding: 10px;
+      border: 1px solid #ccc;
+      padding: 8px;
       text-align: center;
     }
     th {
-      background-color: #e0f0ff;
+      background-color: #dceeff;
     }
     #totalBox {
       margin-top: 10px;
@@ -116,11 +77,12 @@
         <option value="All">All Staff</option>
       </select>
     </label>
-    <button class="refresh" onclick="refreshData()"><i class="fas fa-sync-alt"></i>Refresh</button>
-    <button class="today" onclick="filterToday()"><i class="fas fa-calendar-day"></i>Today</button>
-    <button class="print" onclick="printEntries()"><i class="fas fa-print"></i>Print</button>
-    <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i>Logout</button>
-    <input type="text" id="searchBar" placeholder="🔍 Search table...">
+    <button onclick="refreshData()">🔁 Refresh</button>
+    <button onclick="filterToday()">🗓 Today</button>
+    <button onclick="printEntries()">🖨 Print</button>
+    <button onclick="exportToExcel()">📥 Export to Excel</button>
+    <button onclick="exportToPDF()">📥 Export to PDF</button>
+    <button onclick="logout()">🚪 Logout</button>
     <div id="totalBox">Total: ₹0</div>
   </div>
 
@@ -164,6 +126,21 @@ function printEntries() {
   document.body.innerHTML = original;
 }
 
+function exportToExcel() {
+  const table = document.getElementById("entryTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+  XLSX.writeFile(wb, "dashboard_data.xlsx");
+}
+
+function exportToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Dashboard Entries", 14, 16);
+  const table = document.getElementById("entryTable");
+  doc.autoTable({ html: table });
+  doc.save("dashboard_data.pdf");
+}
+
 async function refreshData() {
   const res = await fetch(sheetURL);
   const csv = await res.text();
@@ -175,14 +152,14 @@ async function refreshData() {
   const to = document.getElementById("toDate").value || "9999-12-31";
   const wallet = document.getElementById("walletFilter").value;
   const staff = document.getElementById("staffFilter").value;
-  const search = document.getElementById("searchBar").value.toLowerCase();
 
   const staffSet = new Set();
   let total = 0;
 
   rows.slice(1).forEach(([date, wal, closing, note, code, name]) => {
-    const textRow = [date, wal, closing, note, code, name].join(" ").toLowerCase();
-    if (date < from || date > to || (wallet !== "All" && wal !== wallet) || (staff !== "All" && name !== staff) || !textRow.includes(search)) return;
+    if (date < from || date > to) return;
+    if (wallet !== "All" && wal !== wallet) return;
+    if (staff !== "All" && name !== staff) return;
 
     const tr = document.createElement("tr");
     [date, wal, closing, note, code, name].forEach(val => {
@@ -191,12 +168,11 @@ async function refreshData() {
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
-
     total += parseFloat(closing);
     staffSet.add(name);
   });
 
-  document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString("en-IN");
+  document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
 
   const staffSelect = document.getElementById("staffFilter");
   const currentVal = staffSelect.value;
