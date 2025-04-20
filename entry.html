@@ -100,7 +100,7 @@
       .then(response => {
         if (response === 'Success') {
           alert('Entry submitted successfully');
-          document.querySelector('.entry-box').reset();
+          document.getElementById('entryForm').reset();
         } else {
           alert('Failed to submit');
         }
