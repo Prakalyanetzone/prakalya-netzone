@@ -1,117 +1,180 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Entry - Prakalya Netzone</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boss Dashboard - Prakalya Netzone</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #eef3f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       padding: 20px;
     }
     h1 {
+      text-align: center;
       color: #0056d6;
-      margin: 20px 0;
     }
-    .entry-box {
+    .filters, .table-box {
+      max-width: 1000px;
+      margin: auto;
       background: white;
-      padding: 25px;
-      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 500px;
-      width: 100%;
     }
-    input, select, textarea, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
+    input, select, button {
+      margin: 5px;
+      padding: 10px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      font-size: 16px;
     }
-    button {
-      background-color: #0056d6;
-      color: white;
-      border: none;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #dceeff;
+    }
+    #totalBox {
+      margin-top: 10px;
+      text-align: right;
       font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #003d9a;
     }
   </style>
 </head>
 <body>
   <h1>PRAKALYA NETZONE</h1>
-  <div class="entry-box">
-    <input type="date" id="date" required>
-    <select id="wallet" required>
-      <option value="">Select Wallet</option>
-      <option value="BOB SATHYA">BOB SATHYA</option>
-      <option value="HDFC MURUGESAN">HDFC MURUGESAN</option>
-      <option value="SBI">SBI</option>
-      <option value="SURIYA GPAY">SURIYA GPAY</option>
-      <option value="CSC MURUGESAN">CSC MURUGESAN</option>
-      <option value="OTHERS 1">OTHERS 1</option>
-      <option value="OTHERS 2">OTHERS 2</option>
-      <option value="OTHERS 3">OTHERS 3</option>
-      <option value="OTHERS 4">OTHERS 4</option>
-    </select>
-    <input type="number" id="closing" placeholder="Closing Balance" required>
-    <textarea id="note" placeholder="Notes (if any)"></textarea>
-    <input type="text" id="staffName" placeholder="Enter Your Name" required>
-    <button onclick="submitEntry()">Submit</button>
-    <button onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;">Logout</button>
+
+  <div class="filters">
+    <label>From: <input type="date" id="fromDate" /></label>
+    <label>To: <input type="date" id="toDate" /></label>
+    <label>Wallet:
+      <select id="walletFilter">
+        <option value="All">All Wallets</option>
+        <option>BOB SATHYA</option>
+        <option>HDFC MURUGESAN</option>
+        <option>SBI</option>
+        <option>SURIYA GPAY</option>
+        <option>CSC MURUGESAN</option>
+        <option>OTHERS 1</option>
+        <option>OTHERS 2</option>
+        <option>OTHERS 3</option>
+        <option>OTHERS 4</option>
+      </select>
+    </label>
+    <label>Staff:
+      <select id="staffFilter">
+        <option value="All">All Staff</option>
+      </select>
+    </label>
+    <button onclick="refreshData()">🔁 Refresh</button>
+    <button onclick="filterToday()">🕒 Today</button>
+    <button onclick="printEntries()">📋 Print</button>
+    <button onclick="logout()">🚪 Logout</button>
+    <div id="totalBox">Total: ₹0</div>
   </div>
 
-  <script>
-    const userCode = sessionStorage.getItem('userCode') || '';
+  <div class="table-box">
+    <table id="entryTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Wallet</th>
+          <th>Closing</th>
+          <th>Note</th>
+          <th>Staff Code</th>
+          <th>Staff Name</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    function submitEntry() {
-      const date = document.getElementById('date').value;
-      const wallet = document.getElementById('wallet').value.trim();
-      const closing = document.getElementById('closing').value.trim();
-      const note = document.getElementById('note').value.trim();
-      const staffName = document.getElementById('staffName').value.trim();
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
 
-      if (!date || !wallet || !closing || !staffName) {
-        alert('Please fill all required fields');
-        return;
-      }
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "index.html";
+}
 
-      const data = new URLSearchParams();
-      data.append('date', date);
-      data.append('wallet', wallet);
-      data.append('closing', closing);
-      data.append('note', note);
-      data.append('userCode', userCode);
-      data.append('staffName', staffName);
+function filterToday() {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("fromDate").value = today;
+  document.getElementById("toDate").value = today;
+  refreshData();
+}
 
-      fetch('https://script.google.com/macros/s/AKfycbwccYy-IynGKGkkfmdKCRYaL84hIiPPI5Axq61oj6uoxcLE1AudwYb8PR9_2CKHZLfw/exec', {
-        method: 'POST',
-        body: data
-      })
-      .then(res => res.text())
-      .then(response => {
-        if (response === 'Success') {
-          alert('Entry submitted successfully');
-          document.querySelector('.entry-box').reset();
-        } else {
-          alert('Failed to submit');
-        }
-      })
-      .catch(err => alert('Error: ' + err));
-    }
+function printEntries() {
+  const original = document.body.innerHTML;
+  const content = document.querySelector(".table-box").innerHTML;
+  const title = document.querySelector("h1").outerHTML;
+  document.body.innerHTML = title + content;
+  window.print();
+  document.body.innerHTML = original;
+}
 
-    function logout() {
-      sessionStorage.clear();
-      window.location.href = 'login.html';
-    }
-  </script>
+async function refreshData() {
+  const res = await fetch(sheetURL);
+  const csv = await res.text();
+  const rows = csv.trim().split("\n").map(r => r.split(","));
+  const tbody = document.querySelector("#entryTable tbody");
+  tbody.innerHTML = "";
+
+  const from = document.getElementById("fromDate").value || "0000-00-00";
+  const to = document.getElementById("toDate").value || "9999-12-31";
+  const wallet = document.getElementById("walletFilter").value;
+  const staff = document.getElementById("staffFilter").value;
+
+  const staffSet = new Set();
+  let total = 0;
+
+  rows.slice(1).forEach(([date, wal, closing, note, code, name]) => {
+    if (date < from || date > to) return;
+    if (wallet !== "All" && wal !== wallet) return;
+    if (staff !== "All" && name !== staff) return;
+
+    const tr = document.createElement("tr");
+    [date, wal, closing, note, code, name].forEach(val => {
+      const td = document.createElement("td");
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+
+    total += parseFloat(closing);
+    staffSet.add(name);
+  });
+
+  document.getElementById("totalBox").textContent = "Total: ₹" + total.toFixed(2);
+
+  // Fill staff dropdown
+  const staffSelect = document.getElementById("staffFilter");
+  const currentVal = staffSelect.value;
+  staffSelect.innerHTML = "<option value='All'>All Staff</option>";
+  staffSet.forEach(name => {
+    const opt = document.createElement("option");
+    opt.textContent = name;
+    staffSelect.appendChild(opt);
+  });
+  staffSelect.value = currentVal;
+}
+
+window.onload = () => {
+  if (sessionStorage.getItem("role") !== "boss") {
+    window.location.href = "index.html";
+  } else {
+    refreshData();
+  }
+};
+</script>
 </body>
 </html>
