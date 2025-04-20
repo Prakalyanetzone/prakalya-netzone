@@ -4,144 +4,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Prakalya Netzone - Dashboard</title>
+  <title>Login - Prakalya Netzone</title>
   <style>
     body {
       font-family: Arial;
       background: #eef3f9;
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
     h1 {
-      text-align: center;
       color: #0056d6;
     }
-    .filters, .table-box {
-      max-width: 1000px;
-      margin: auto;
+    .login-box {
       background: white;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 300px;
     }
-    input, select, button {
-      margin: 5px;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    table {
+    input {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
     }
-    th {
-      background-color: #dceeff;
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #0056d6;
+      color: white;
+      border: none;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    #totalBox {
-      margin-top: 10px;
-      text-align: right;
-      font-weight: bold;
+    button:hover {
+      background-color: #003eaa;
     }
   </style>
 </head>
 <body>
   <h1>PRAKALYA NETZONE</h1>
-
-  <div class="filters">
-    <label>From: <input type="date" id="fromDate" /></label>
-    <label>To: <input type="date" id="toDate" /></label>
-    <label>Wallet:
-      <select id="walletFilter">
-        <option value="">All Wallets</option>
-      </select>
-    </label>
-    <label>Staff:
-      <select id="staffFilter">
-        <option value="">All Staff</option>
-      </select>
-    </label>
-    <button onclick="refreshData()">🔁 Refresh</button>
-    <div id="totalBox">Total: ₹0</div>
+  <div class="login-box">
+    <input type="text" id="userID" placeholder="User ID" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button onclick="login()">Login</button>
   </div>
 
-  <div class="table-box">
-    <table id="entryTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Wallet</th>
-          <th>Closing</th>
-          <th>Note</th>
-          <th>Staff Code</th>
-          <th>Staff Name</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <script>
+    function login() {
+      const user = document.getElementById("userID").value.trim();
+      const pass = document.getElementById("password").value.trim();
 
-<script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
+      if (user === "Murugesan" && pass === "Muru@2025") {
+        sessionStorage.setItem("role", "boss");
+        window.location.href = "dashboard.html";
+      } else {
+        const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
+        if (staffUsers[user] && staffUsers[user] === pass) {
+          const staffName = prompt("Enter your name:");
+          if (!staffName) {
+            alert("Staff name is required.");
+            return;
+          }
+          sessionStorage.setItem("userCode", user);
+          sessionStorage.setItem("staffName", staffName);
+          sessionStorage.setItem("role", "staff");
+          window.location.href = "entry.html";
+        } else {
+          alert("Invalid login credentials.");
+        }
+      }
+    }
 
-async function refreshData() {
-  const res = await fetch(sheetURL);
-  const csv = await res.text();
-  const rows = csv.trim().split("\n").map(r => r.split(","));
-
-  const tbody = document.querySelector("#entryTable tbody");
-  tbody.innerHTML = "";
-  let total = 0;
-
-  const from = document.getElementById("fromDate").value || "0000-00-00";
-  const to = document.getElementById("toDate").value || "9999-12-31";
-  const walletFilter = document.getElementById("walletFilter").value;
-  const staffFilter = document.getElementById("staffFilter").value;
-
-  const wallets = new Set();
-  const staffs = new Set();
-
-  rows.forEach(row => {
-    const [date, wallet, closing, note, code, staff] = row;
-    if (!date || !wallet || isNaN(closing)) return;
-
-    wallets.add(wallet);
-    staffs.add(staff);
-
-    if (date < from || date > to) return;
-    if (walletFilter && wallet !== walletFilter) return;
-    if (staffFilter && staff !== staffFilter) return;
-
-    total += parseFloat(closing);
-
-    const tr = document.createElement("tr");
-    [date, wallet, closing, note, code, staff].forEach(val => {
-      const td = document.createElement("td");
-      td.textContent = val;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById("totalBox").textContent = `Total: ₹${total.toFixed(2)}`;
-
-  // Populate filter dropdowns
-  const walletSel = document.getElementById("walletFilter");
-  const staffSel = document.getElementById("staffFilter");
-  walletSel.innerHTML = '<option value="">All Wallets</option>';
-  staffSel.innerHTML = '<option value="">All Staff</option>';
-  wallets.forEach(w => walletSel.innerHTML += `<option value="${w}">${w}</option>`);
-  staffs.forEach(s => staffSel.innerHTML += `<option value="${s}">${s}</option>`);
-}
-
-// Auto refresh every 15s
-setInterval(refreshData, 15000);
-window.onload = refreshData;
-</script>
+    // Preload staff users 001–010
+    if (!localStorage.getItem("staffUsers")) {
+      const staffUsers = {};
+      for (let i = 1; i <= 10; i++) {
+        const id = i.toString().padStart(3, '0');
+        staffUsers[id] = id;
+      }
+      localStorage.setItem("staffUsers", JSON.stringify(staffUsers));
+    }
+  </script>
 </body>
 </html>
