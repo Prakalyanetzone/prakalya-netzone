@@ -1,11 +1,12 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Prakalya Netzone - Dashboard</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Prakalya Netzone - Dashboard</title>
+<style>
     body {
       font-family: Arial;
       background: #eef3f9;
@@ -51,41 +52,38 @@
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
-
-  <div class="filters">
-    <label>From: <input type="date" id="fromDate" /></label>
-    <label>To: <input type="date" id="toDate" /></label>
-    <label>Wallet:
+<h1>PRAKALYA NETZONE</h1>
+<div class="filters">
+<label>From: <input id="fromDate" type="date"/></label>
+<label>To: <input id="toDate" type="date"/></label>
+<label>Wallet:
       <select id="walletFilter">
-        <option value="">All Wallets</option>
-      </select>
-    </label>
-    <label>Staff:
+<option value="">All Wallets</option>
+</select>
+</label>
+<label>Staff:
       <select id="staffFilter">
-        <option value="">All Staff</option>
-      </select>
-    </label>
-    <button onclick="refreshData()">🔁 Refresh</button>
-    <div id="totalBox">Total: ₹0</div>
-  </div>
-
-  <div class="table-box">
-    <table id="entryTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Wallet</th>
-          <th>Closing</th>
-          <th>Note</th>
-          <th>Staff Code</th>
-          <th>Staff Name</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
+<option value="">All Staff</option>
+</select>
+</label>
+<button onclick="refreshData()">🔁 Refresh</button><button onclick="filterToday()">🕒 Today</button><button onclick="printEntries()">📋 Print</button><button onclick="logout()">🚪 Logout</button>
+<div id="totalBox">Total: ₹0</div>
+</div>
+<div class="table-box">
+<table id="entryTable">
+<thead>
+<tr>
+<th>Date</th>
+<th>Wallet</th>
+<th>Closing</th>
+<th>Note</th>
+<th>Staff Code</th>
+<th>Staff Name</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
 
@@ -142,6 +140,33 @@ async function refreshData() {
 // Auto refresh every 15s
 setInterval(refreshData, 15000);
 window.onload = refreshData;
+</script>
+
+<script>
+if (!sessionStorage.getItem("userCode")) {
+  window.location.href = "login.html";
+}
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "login.html";
+}
+
+function filterToday() {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("fromDate").value = today;
+  document.getElementById("toDate").value = today;
+  if (typeof refreshData === "function") refreshData();
+}
+
+function printEntries() {
+  const original = document.body.innerHTML;
+  const content = document.querySelector(".table-box")?.innerHTML || document.querySelector("table")?.outerHTML;
+  const title = document.querySelector("h1").outerHTML;
+  document.body.innerHTML = title + content;
+  window.print();
+  document.body.innerHTML = original;
+}
 </script>
 </body>
 </html>

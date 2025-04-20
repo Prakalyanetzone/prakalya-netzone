@@ -112,7 +112,13 @@
       sessionStorage.clear();
       window.location.href = 'login.html';
     }
-  
+  </script>
+
+<script>
+if (!sessionStorage.getItem("userCode")) {
+  window.location.href = "login.html";
+}
+
 function logout() {
   sessionStorage.clear();
   window.location.href = "login.html";
@@ -122,17 +128,17 @@ function filterToday() {
   const today = new Date().toISOString().split("T")[0];
   document.getElementById("fromDate").value = today;
   document.getElementById("toDate").value = today;
-  refreshData();
+  if (typeof refreshData === "function") refreshData();
 }
 
 function printEntries() {
   const original = document.body.innerHTML;
-  const content = document.querySelector(".table-box").innerHTML;
+  const content = document.querySelector(".table-box")?.innerHTML || document.querySelector("table")?.outerHTML;
   const title = document.querySelector("h1").outerHTML;
   document.body.innerHTML = title + content;
   window.print();
   document.body.innerHTML = original;
 }
-    </script>
+</script>
 </body>
 </html>

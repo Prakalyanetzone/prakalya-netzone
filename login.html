@@ -1,7 +1,8 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <script>
+<script>
     if (!localStorage.getItem('staffUsers')) {
       const users = {};
       for (let i = 1; i <= 10; i++) {
@@ -11,10 +12,10 @@
       localStorage.setItem('staffUsers', JSON.stringify(users));
     }
   </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Prakalya Netzone</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - Prakalya Netzone</title>
+<style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -60,14 +61,13 @@
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
-  <div class="login-box">
-    <input type="text" id="userid" placeholder="User ID" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button onclick="login()">Login</button>
-  </div>
-
-  <script>
+<h1>PRAKALYA NETZONE</h1>
+<div class="login-box">
+<input id="userid" placeholder="User ID" required="" type="text"/>
+<input id="password" placeholder="Password" required="" type="password"/>
+<button onclick="login()">Login</button>
+</div>
+<script>
     
     // Preload staffUsers 001 to 010 with matching passwords
     if (!localStorage.getItem('staffUsers')) {

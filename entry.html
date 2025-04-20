@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Entry - Prakalya Netzone</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Entry - Prakalya Netzone</title>
+<style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -47,29 +48,28 @@
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
-  <div class="entry-box">
-    <input type="date" id="date" required>
-    <select id="wallet" required>
-      <option value="">Select Wallet</option>
-      <option value="BOB SATHYA">BOB SATHYA</option>
-      <option value="HDFC MURUGESAN">HDFC MURUGESAN</option>
-      <option value="SBI">SBI</option>
-      <option value="SURIYA GPAY">SURIYA GPAY</option>
-      <option value="CSC MURUGESAN">CSC MURUGESAN</option>
-      <option value="OTHERS 1">OTHERS 1</option>
-      <option value="OTHERS 2">OTHERS 2</option>
-      <option value="OTHERS 3">OTHERS 3</option>
-      <option value="OTHERS 4">OTHERS 4</option>
-    </select>
-    <input type="number" id="closing" placeholder="Closing Balance" required>
-    <textarea id="note" placeholder="Notes (if any)"></textarea>
-    <input type="text" id="staffName" placeholder="Enter Your Name" required>
-    <button onclick="submitEntry()">Submit</button>
-    <button onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;">Logout</button>
-  </div>
-
-  <script>
+<h1>PRAKALYA NETZONE</h1>
+<div class="entry-box">
+<input id="date" required="" type="date"/>
+<select id="wallet" required="">
+<option value="">Select Wallet</option>
+<option value="BOB SATHYA">BOB SATHYA</option>
+<option value="HDFC MURUGESAN">HDFC MURUGESAN</option>
+<option value="SBI">SBI</option>
+<option value="SURIYA GPAY">SURIYA GPAY</option>
+<option value="CSC MURUGESAN">CSC MURUGESAN</option>
+<option value="OTHERS 1">OTHERS 1</option>
+<option value="OTHERS 2">OTHERS 2</option>
+<option value="OTHERS 3">OTHERS 3</option>
+<option value="OTHERS 4">OTHERS 4</option>
+</select>
+<input id="closing" placeholder="Closing Balance" required="" type="number"/>
+<textarea id="note" placeholder="Notes (if any)"></textarea>
+<input id="staffName" placeholder="Enter Your Name" required="" type="text"/>
+<button onclick="submitEntry()">Submit</button>
+<button onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;">Logout</button>
+</div>
+<script>
     const userCode = sessionStorage.getItem('userCode') || '';
 
     function submitEntry() {
@@ -113,5 +113,32 @@
       window.location.href = 'login.html';
     }
   </script>
+
+<script>
+if (!sessionStorage.getItem("userCode")) {
+  window.location.href = "login.html";
+}
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "login.html";
+}
+
+function filterToday() {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("fromDate").value = today;
+  document.getElementById("toDate").value = today;
+  if (typeof refreshData === "function") refreshData();
+}
+
+function printEntries() {
+  const original = document.body.innerHTML;
+  const content = document.querySelector(".table-box")?.innerHTML || document.querySelector("table")?.outerHTML;
+  const title = document.querySelector("h1").outerHTML;
+  document.body.innerHTML = title + content;
+  window.print();
+  document.body.innerHTML = original;
+}
+</script>
 </body>
 </html>
