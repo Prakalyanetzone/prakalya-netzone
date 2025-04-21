@@ -1,110 +1,136 @@
-
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Staff Entry - Prakalya Netzone</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Entry - Prakalya Netzone</title>
+<style>
     body {
-      font-family: Arial;
+      margin: 0;
+      font-family: Arial, sans-serif;
       background: #eef3f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
     }
     h1 {
-      text-align: center;
       color: #0056d6;
+      margin: 20px 0;
     }
-    form {
-      max-width: 500px;
-      margin: auto;
+    .entry-box {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
+      padding: 25px;
+      border-radius: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
     }
     input, select, textarea, button {
       width: 100%;
-      margin-bottom: 15px;
-      padding: 10px;
-      border-radius: 5px;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
     button {
-      background-color: #003f9a;
+      background-color: #0056d6;
       color: white;
-      font-weight: bold;
       border: none;
+      font-weight: bold;
       cursor: pointer;
     }
-    button.logout {
-      background-color: #aaa;
-      margin-top: 5px;
+    button:hover {
+      background-color: #003d9a;
     }
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
-  <form id="entryForm">
-    <input type="date" name="date" required />
-    <select name="wallet" required>
-      <option value="">Select Wallet</option>
-      <option>BOB SATHYA WALLET</option>
-      <option>HDFC MURUGESAN WALLET</option>
-      <option>SBI WALLET</option>
-      <option>SURIYA GPAY WALLET</option>
-      <option>CSC MURUGESAN WALLET</option>
-      <option>BOB MURUGESAN WALLET</option>
-      <option>ROI NET MURUGESAN WALLET</option>
-      <option>IOB MURUGESAN WALLET</option>
-      <option>CSC SATHYA WALLET</option>
-      <option>ROI NET PRASANNA WALLET</option>
-      <option>ROINET SATHYA WALLET</option>
-      <option>SBI PRASANNA WALLET</option>
-      <option>INDIAN OVERSEAS BANK WALLET</option>
-      <option>TNESVAI WALLET</option>
-      <option>PAY BINGO WALLET</option>
-      <option>MOS WALLET</option>
-      <option>BARODA FASTTAG WALLET</option>
-      <option>SARAVANAN CREDIT WALLET</option>
-      <option>GPAY SETTLEMENT WALLET</option>
-      <option>SARAVANA BINGO WALLET</option>
-    </select>
-    <input type="number" name="closing" placeholder="Closing Balance" required />
-    <textarea name="note" placeholder="Notes (if any)"></textarea>
-    <input type="text" name="staffName" placeholder="Staff Name" required />
-    <button type="submit">Submit</button>
-    <button type="button" class="logout" onclick="logout()">Logout</button>
-  </form>
+<h1>PRAKALYA NETZONE</h1>
+<form id="entryForm" onsubmit="submitForm(); return false;"><div class="entry-box">
+<input id="date" required="" type="date"/>
+<select id="wallet" required="">
+<option value="">Select Wallet</option>
+<option>BOB SATHYA WALLET</option>
+<option>HDFC MURUGESAN WALLET</option>
+<option>SBI WALLET</option>
+<option>SURIYA GPAY WALLET</option>
+<option>CSC MURUGESAN WALLET</option>
+<option>BOB MURUGESAN WALLET</option>
+<option>ROI NET MURUGESAN WALLET</option>
+<option>IOB MURUGESAN WALLET</option>
+<option>CSC SATHYA WALLET</option>
+<option>ROI NET PRASANNA WALLET</option>
+<option>ROINET SATHYA WALLET</option>
+<option>SBI PRASANNA WALLET</option>
+<option>INDIAN OVERSEAS BANK WALLET</option>
+<option>TNESVAI WALLET</option>
+<option>PAY BINGO WALLET</option>
+<option>MOS WALLET</option>
+<option>BARODA FASTTAG WALLET</option>
+<option>SARAVANAN CREDIT WALLET</option>
+<option>GPAY SETTLEMENT WALLET</option>
+<option>SARAVANA BINGO WALLET</option>
+<option value="BOB SATHYA">BOB SATHYA</option>
+<option value="HDFC MURUGESAN">HDFC MURUGESAN</option>
+<option value="SBI">SBI</option>
+<option value="SURIYA GPAY">SURIYA GPAY</option>
+<option value="CSC MURUGESAN">CSC MURUGESAN</option>
+<option value="OTHERS 1">OTHERS 1</option>
+<option value="OTHERS 2">OTHERS 2</option>
+<option value="OTHERS 3">OTHERS 3</option>
+<option value="OTHERS 4">OTHERS 4</option>
+</select>
+<input id="closing" placeholder="Closing Balance" required="" type="number"/>
+<textarea id="note" placeholder="Notes (if any)"></textarea>
+<input id="staffName" placeholder="Enter Your Name" required="" type="text"/>
+<button onclick="submitEntry()">Submit</button>
+<button onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;">Logout</button>
+</div></form>
+<script>
+    const userCode = sessionStorage.getItem('userCode') || '';
 
-  <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec';
+    function submitEntry() {
+      const date = document.getElementById('date').value;
+      const wallet = document.getElementById('wallet').value.trim();
+      const closing = document.getElementById('closing').value.trim();
+      const note = document.getElementById('note').value.trim();
+      const staffName = document.getElementById('staffName').value.trim();
 
-    document.getElementById("entryForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const formData = new FormData(document.getElementById("entryForm"));
+      if (!date || !wallet || !closing || !staffName) {
+        alert('Please fill all required fields');
+        return;
+      }
 
-      fetch(scriptURL, {
+      const data = new URLSearchParams();
+      data.append('date', date);
+      data.append('wallet', wallet);
+      data.append('closing', closing);
+      data.append('note', note);
+      data.append('userCode', userCode);
+      data.append('staffName', staffName);
+
+      fetch('https://script.google.com/macros/s/AKfycbwccYy-IynGKGkkfmdKCRYaL84hIiPPI5Axq61oj6uoxcLE1AudwYb8PR9_2CKHZLfw/exec', {
         method: 'POST',
-        body: formData
+        body: data
       })
-      .then(response => response.text())
-      .then(text => {
-        if (text.trim() === "Success") {
-          alert("✅ Entry submitted successfully");
-          document.getElementById("entryForm").reset();
+      .then(res => res.text())
+      .then(response => {
+        if (response === 'Success') {
+          alert('Entry submitted successfully');
+          document.getElementById('entryForm').reset();
         } else {
-          alert("⚠️ Something went wrong: " + text);
+          alert('Failed to submit');
         }
       })
-      .catch(error => {
-        alert("❌ Error: " + error.message);
-      });
-    });
+      .catch(err => alert('Error: ' + err));
+    }
 
     function logout() {
       sessionStorage.clear();
-      window.location.href = "index.html";
+      window.location.href = 'login.html';
     }
   </script>
 </body>
