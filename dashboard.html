@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +14,7 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #dceeff; }
     #totalBox { margin-top: 10px; text-align: right; font-weight: bold; }
+    #pagination { text-align: center; margin-top: 15px; }
   </style>
 </head>
 <body>
@@ -40,24 +42,25 @@
       <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th></tr></thead>
       <tbody></tbody>
     </table>
+    <div id="pagination"></div>
   </div>
   <div class="password-box" id="passwordBox" style="display:none;">
     <h3>👥 Manage Staff Passwords</h3>
     <div id="passwordList"></div>
   </div>
-  
-<script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
 
-let filteredRows = [];  // To store all filtered rows
+let filteredRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
 
 async function refreshData() {
   const res = await fetch(sheetURL);
   const csv = await res.text();
-  const rows = csv.trim().split("
-").map(r => r.split(","));
+  const rows = csv.trim().split("\n").map(r => r.split(","));
   const from = document.getElementById("fromDate").value || "0000-00-00";
   const to = document.getElementById("toDate").value || "9999-12-31";
   const wallet = document.getElementById("walletFilter").value;
@@ -66,21 +69,19 @@ async function refreshData() {
   let total = 0;
 
   filteredRows = rows.slice(1).filter(row => {
-  const [date, wal, closing, note, code, name] = row;
-  if (!date || !wal || !closing || !name) return false;
+    const [date, wal, closing, note, code, name] = row;
+    if (!date || !wal || !closing || !name) return false;
     const match = date >= from && date <= to &&
                   (wallet === "All Wallets" || wal === wallet) &&
                   (staff === "All Staff" || name === staff);
     if (match) {
-      total += parseFloat(closing);
+      total += parseFloat(closing || "0");
       staffSet.add(name);
     }
     return match;
   });
 
   document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
-
-  // Update staff dropdown
   const staffSelect = document.getElementById("staffFilter");
   const currentVal = staffSelect.value;
   staffSelect.innerHTML = "<option>All Staff</option>";
@@ -98,7 +99,6 @@ async function refreshData() {
 function renderTablePage() {
   const tbody = document.querySelector("#entryTable tbody");
   tbody.innerHTML = "";
-
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   const pageRows = filteredRows.slice(start, end);
@@ -117,15 +117,7 @@ function renderTablePage() {
 }
 
 function renderPagination() {
-  let container = document.getElementById("pagination");
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "pagination";
-    container.style.textAlign = "center";
-    container.style.marginTop = "10px";
-    document.querySelector(".table-box").appendChild(container);
-  }
-
+  const container = document.getElementById("pagination");
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
   container.innerHTML = `
     <button ${currentPage === 1 ? "disabled" : ""} onclick="prevPage()">Previous</button>
@@ -134,19 +126,43 @@ function renderPagination() {
   `;
 }
 
-function nextPage() {
-  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-  if (currentPage < totalPages) {
-    currentPage++;
-    renderTablePage();
-  }
+function nextPage() { if (currentPage < Math.ceil(filteredRows.length / rowsPerPage)) { currentPage++; renderTablePage(); } }
+function prevPage() { if (currentPage > 1) { currentPage--; renderTablePage(); } }
+
+function exportExcel() {
+  const table = document.getElementById("entryTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+  XLSX.writeFile(wb, "dashboard_data.xlsx");
 }
 
-function prevPage() {
-  if (currentPage > 1) {
-    currentPage--;
-    renderTablePage();
-  }
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Dashboard Entries", 14, 16);
+  doc.autoTable({ html: '#entryTable' });
+  doc.save("dashboard_data.pdf");
+}
+
+function printEntries() {
+  const printWindow = window.open("", "", "width=1000,height=700");
+  printWindow.document.write("<html><head><title>Print</title></head><body>");
+  printWindow.document.write(document.querySelector("h1").outerHTML);
+  printWindow.document.write(document.getElementById("entryTable").outerHTML);
+  printWindow.document.write("</body></html>");
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function filterToday() {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("fromDate").value = today;
+  document.getElementById("toDate").value = today;
+  refreshData();
+}
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "index.html";
 }
 
 function showReset() {
@@ -154,7 +170,7 @@ function showReset() {
   const list = document.getElementById("passwordList");
   const staffUsers = JSON.parse(localStorage.getItem('staffUsers') || "{}");
   list.innerHTML = Object.entries(staffUsers).map(
-    ([id, name]) => \`<div>\${id} - \${name} 
+    ([id, pass]) => \`<div>\${id}
       <input type="text" id="newpass-\${id}" placeholder="New Password" />
       <button onclick="resetPassword('\${id}')">Reset</button>
     </div>\`).join("");
@@ -162,16 +178,11 @@ function showReset() {
 
 function resetPassword(id) {
   const newPass = document.getElementById('newpass-' + id).value;
-  if (!newPass) return alert("Enter new password for " + id);
+  if (!newPass) return alert("Enter new password");
   const users = JSON.parse(localStorage.getItem('staffUsers') || "{}");
   users[id] = newPass;
   localStorage.setItem('staffUsers', JSON.stringify(users));
   alert("Password updated for " + id);
-}
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
 }
 
 window.onload = () => {
@@ -181,7 +192,6 @@ window.onload = () => {
     refreshData();
   }
 };
-</script>
-
+  </script>
 </body>
 </html>
