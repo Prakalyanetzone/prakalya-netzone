@@ -1,217 +1,64 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Boss Dashboard - Prakalya Netzone</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
-      font-family: Arial;
-      background: #eef3f9;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #0056d6;
-    }
-    .filters, .table-box {
-      max-width: 1000px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      margin: 5px;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #dceeff;
-    }
-    #totalBox {
-      margin-top: 10px;
-      text-align: right;
-      font-weight: bold;
-    }
+    body { font-family: Arial; background: #eef3f9; padding: 20px; }
+    h1 { text-align: center; color: #0056d6; }
+    .filters, .table-box, .password-box { max-width: 1000px; margin: auto; background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, select, button { margin: 5px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #dceeff; }
+    #totalBox { margin-top: 10px; text-align: right; font-weight: bold; }
   </style>
 </head>
 <body>
   <h1>PRAKALYA NETZONE</h1>
-
   <div class="filters">
     <label>From: <input type="date" id="fromDate" /></label>
     <label>To: <input type="date" id="toDate" /></label>
     <label>Wallet:
-      <select id="walletFilter">
-        <option value="All">All Wallets</option>
-<option>BOB SATHYA WALLET</option>
-<option>HDFC MURUGESAN WALLET</option>
-<option>SBI WALLET</option>
-<option>SURIYA GPAY WALLET</option>
-<option>CSC MURUGESAN WALLET</option>
-<option>BOB MURUGESAN WALLET</option>
-<option>ROI NET MURUGESAN WALLET</option>
-<option>IOB MURUGESAN WALLET</option>
-<option>CSC SATHYA WALLET</option>
-<option>ROI NET PRASANNA WALLET</option>
-<option>ROINET SATHYA WALLET</option>
-<option>SBI PRASANNA WALLET</option>
-<option>INDIAN OVERSEAS BANK WALLET</option>
-<option>TNESVAI WALLET</option>
-<option>PAY BINGO WALLET</option>
-<option>MOS WALLET</option>
-<option>BARODA FASTTAG WALLET</option>
-<option>SARAVANAN CREDIT WALLET</option>
-<option>GPAY SETTLEMENT WALLET</option>
-<option>SARAVANA BINGO WALLET</option>
-        <option>BOB SATHYA</option>
-        <option>HDFC MURUGESAN</option>
-        <option>SBI</option>
-        <option>SURIYA GPAY</option>
-        <option>CSC MURUGESAN</option>
-        <option>OTHERS 1</option>
-        <option>OTHERS 2</option>
-        <option>OTHERS 3</option>
-        <option>OTHERS 4</option>
-      </select>
+      <select id="walletFilter"><option>All Wallets</option></select>
     </label>
     <label>Staff:
-      <select id="staffFilter">
-        <option value="All">All Staff</option>
-      </select>
+      <select id="staffFilter"><option>All Staff</option></select>
     </label>
     <button onclick="refreshData()">🔁 Refresh</button>
-    <button onclick="filterToday()">🗓 Today</button>
-    <button onclick="printEntries()">🖨 Print</button>
-    <button onclick="exportToExcel()">📥 Export to Excel</button>
-    <button onclick="exportToPDF()">📥 Export to PDF</button>
+    <button onclick="filterToday()">📅 Today</button>
+    <button onclick="printEntries()">📋 Print</button>
+    <button onclick="exportExcel()">📤 Export to Excel</button>
+    <button onclick="exportPDF()">📤 Export to PDF</button>
+    <button onclick="showReset()">🔐 Reset Password</button>
     <button onclick="logout()">🚪 Logout</button>
     <div id="totalBox">Total: ₹0</div>
   </div>
-
   <div class="table-box">
     <table id="entryTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Wallet</th>
-          <th>Closing</th>
-          <th>Note</th>
-          <th>Staff Code</th>
-          <th>Staff Name</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
-
-<script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}
-
-function filterToday() {
-  const today = new Date().toISOString().split("T")[0];
-  document.getElementById("fromDate").value = today;
-  document.getElementById("toDate").value = today;
-  refreshData();
-}
-
-function printEntries() {
-  const original = document.body.innerHTML;
-  const content = document.querySelector(".table-box").innerHTML;
-  const title = document.querySelector("h1").outerHTML;
-  document.body.innerHTML = title + content;
-  window.print();
-  document.body.innerHTML = original;
-}
-
-function exportToExcel() {
-  const table = document.getElementById("entryTable");
-  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-  XLSX.writeFile(wb, "dashboard_data.xlsx");
-}
-
-function exportToPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Dashboard Entries", 14, 16);
-  const table = document.getElementById("entryTable");
-  doc.autoTable({ html: table });
-  doc.save("dashboard_data.pdf");
-}
-
-async function refreshData() {
-  const res = await fetch(sheetURL);
-  const csv = await res.text();
-  const rows = csv.trim().split("\n").map(r => r.split(","));
-  const tbody = document.querySelector("#entryTable tbody");
-  tbody.innerHTML = "";
-
-  const from = document.getElementById("fromDate").value || "0000-00-00";
-  const to = document.getElementById("toDate").value || "9999-12-31";
-  const wallet = document.getElementById("walletFilter").value;
-  const staff = document.getElementById("staffFilter").value;
-
-  const staffSet = new Set();
-  let total = 0;
-
-  rows.slice(1).forEach(([date, wal, closing, note, code, name]) => {
-    if (date < from || date > to) return;
-    if (wallet !== "All" && wal !== wallet) return;
-    if (staff !== "All" && name !== staff) return;
-
-    const tr = document.createElement("tr");
-    [date, wal, closing, note, code, name].forEach(val => {
-      const td = document.createElement("td");
-      td.textContent = val;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-    total += parseFloat(closing);
-    staffSet.add(name);
-  });
-
-  document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
-
-  const staffSelect = document.getElementById("staffFilter");
-  const currentVal = staffSelect.value;
-  staffSelect.innerHTML = "<option value='All'>All Staff</option>";
-  staffSet.forEach(name => {
-    const opt = document.createElement("option");
-    opt.textContent = name;
-    staffSelect.appendChild(opt);
-  });
-  staffSelect.value = currentVal;
-}
-
-window.onload = () => {
-  if (sessionStorage.getItem("role") !== "boss") {
-    window.location.href = "index.html";
-  } else {
-    refreshData();
-  }
-};
-</script>
+  <div class="password-box" id="passwordBox" style="display:none;">
+    <h3>👥 Manage Staff Passwords</h3>
+    <div id="passwordList"></div>
+  </div>
+  <script>
+    const staffUsers = [{ id: "001", name: "user" }, { id: "002", name: "SEKAR" }];
+    function showReset() {
+      document.getElementById('passwordBox').style.display = 'block';
+      const list = document.getElementById("passwordList");
+      list.innerHTML = staffUsers.map(user =>
+        `<div>${user.id} - ${user.name} <button onclick="alert('Resetting ${user.id}')">Reset</button></div>`).join("");
+    }
+    function logout() { alert("Logging out..."); }
+    function refreshData() {}
+    function filterToday() {}
+    function printEntries() {}
+    function exportExcel() {}
+    function exportPDF() {}
+  </script>
 </body>
 </html>
