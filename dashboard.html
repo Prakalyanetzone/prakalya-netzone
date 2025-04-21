@@ -8,10 +8,20 @@
   <style>
     body { font-family: Arial; background: #eef3f9; padding: 20px; }
     h1 { text-align: center; color: #0056d6; }
-    .filters, .table-box, .password-box { max-width: 1000px; margin: auto; background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    input, select, button { margin: 5px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .filters, .table-box, .password-box {
+      max-width: 1000px; margin: auto; background: white;
+      padding: 20px; margin-top: 20px;
+      border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      margin: 5px; padding: 10px; border-radius: 5px; border: 1px solid #ccc;
+    }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc; padding: 8px; text-align: center;
+    }
     th { background-color: #dceeff; }
     #totalBox { margin-top: 10px; text-align: right; font-weight: bold; }
   </style>
@@ -30,9 +40,6 @@
     <button onclick="refreshData()">🔁 Refresh</button>
     <button onclick="filterToday()">📅 Today</button>
     <button onclick="printEntries()">📋 Print</button>
-    <button onclick="exportExcel()">📤 Export to Excel</button>
-    <button onclick="exportPDF()">📤 Export to PDF</button>
-    <button onclick="showReset()">🔐 Reset Password</button>
     <button onclick="logout()">🚪 Logout</button>
     <div id="totalBox">Total: ₹0</div>
   </div>
@@ -42,19 +49,18 @@
       <tbody></tbody>
     </table>
   </div>
-  <div class="password-box" id="passwordBox" style="display:none;">
-    <h3>👥 Manage Staff Passwords</h3>
-    <div id="passwordList"></div>
-  </div>
 
 <script>
   let allEntries = [];
 
   function refreshData() {
-    fetch('https://script.google.com/macros/s/AKfycbwccYy-IynGKGkkfmdKCRYaL84hIiPPI5Axq61oj6uoxcLE1AudwYb8PR9_2CKHZLfw/exec')
-      .then(res => res.json())
-      .then(data => {
-        allEntries = data;
+    fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv')
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.trim().split("\n").map(r => r.split(","));
+        allEntries = rows.slice(1).map(r => ({
+          date: r[0], wallet: r[1], closing: r[2], note: r[3], userCode: r[4], staffName: r[5]
+        }));
         populateTable(allEntries);
         populateFilters(allEntries);
       });
@@ -89,10 +95,10 @@
     staffSelect.innerHTML = '<option value="">All Staff</option>';
 
     [...walletSet].sort().forEach(wallet => {
-      walletSelect.innerHTML += `<option>${wallet}</option>`;
+      walletSelect.innerHTML += `<option value="${wallet}">${wallet}</option>`;
     });
     [...staffSet].sort().forEach(staff => {
-      staffSelect.innerHTML += `<option>${staff}</option>`;
+      staffSelect.innerHTML += `<option value="${staff}">${staff}</option>`;
     });
   }
 
@@ -120,51 +126,19 @@
     window.print();
   }
 
-  function exportExcel() {
-    alert("Export to Excel clicked");
-  }
-
-  function exportPDF() {
-    alert("Export to PDF clicked");
-  }
-
-  function showReset() {
-    document.getElementById('passwordBox').style.display = 'block';
-    const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
-    const list = document.getElementById("passwordList");
-    list.innerHTML = Object.entries(staffUsers).map(([id, pass]) =>
-      `<div>${id} <input type="text" placeholder="New Password" id="pw_${id}" />
-       <button onclick="resetPassword('${id}')">Reset</button></div>`
-    ).join("");
-  }
-
-  function resetPassword(id) {
-    const newPw = document.getElementById("pw_" + id).value;
-    if (!newPw) {
-      alert("Password cannot be empty");
-      return;
-    }
-    const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
-    staffUsers[id] = newPw;
-    localStorage.setItem("staffUsers", JSON.stringify(staffUsers));
-    alert("Password updated for " + id);
-  }
-
   function logout() {
     sessionStorage.clear();
     window.location.href = "login.html";
   }
 
-  // Auto-fetch on load
+  // Auto-load on page ready
   refreshData();
 
-  // Add event listeners to filters
+  // Filter triggers
   document.getElementById("walletFilter").addEventListener("change", () => populateTable(allEntries));
   document.getElementById("staffFilter").addEventListener("change", () => populateTable(allEntries));
   document.getElementById("fromDate").addEventListener("change", () => populateTable(allEntries));
   document.getElementById("toDate").addEventListener("change", () => populateTable(allEntries));
 </script>
-
-
 </body>
 </html>
