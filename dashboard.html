@@ -157,7 +157,14 @@
 
   // Auto-fetch on load
   refreshData();
+
+  // Add event listeners to filters
+  document.getElementById("walletFilter").addEventListener("change", () => populateTable(allEntries));
+  document.getElementById("staffFilter").addEventListener("change", () => populateTable(allEntries));
+  document.getElementById("fromDate").addEventListener("change", () => populateTable(allEntries));
+  document.getElementById("toDate").addEventListener("change", () => populateTable(allEntries));
 </script>
+
 
 </body>
 </html>
