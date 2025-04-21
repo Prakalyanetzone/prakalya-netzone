@@ -45,20 +45,141 @@
     <h3>👥 Manage Staff Passwords</h3>
     <div id="passwordList"></div>
   </div>
-  <script>
-    const staffUsers = [{ id: "001", name: "user" }, { id: "002", name: "SEKAR" }];
-    function showReset() {
-      document.getElementById('passwordBox').style.display = 'block';
-      const list = document.getElementById("passwordList");
-      list.innerHTML = staffUsers.map(user =>
-        `<div>${user.id} - ${user.name} <button onclick="alert('Resetting ${user.id}')">Reset</button></div>`).join("");
+  
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
+
+let filteredRows = [];  // To store all filtered rows
+let currentPage = 1;
+const rowsPerPage = 20;
+
+async function refreshData() {
+  const res = await fetch(sheetURL);
+  const csv = await res.text();
+  const rows = csv.trim().split("
+").map(r => r.split(","));
+  const from = document.getElementById("fromDate").value || "0000-00-00";
+  const to = document.getElementById("toDate").value || "9999-12-31";
+  const wallet = document.getElementById("walletFilter").value;
+  const staff = document.getElementById("staffFilter").value;
+  const staffSet = new Set();
+  let total = 0;
+
+  filteredRows = rows.slice(1).filter(([date, wal, closing, note, code, name]) => {
+    const match = date >= from && date <= to &&
+                  (wallet === "All Wallets" || wal === wallet) &&
+                  (staff === "All Staff" || name === staff);
+    if (match) {
+      total += parseFloat(closing);
+      staffSet.add(name);
     }
-    function logout() { alert("Logging out..."); }
-    function refreshData() {}
-    function filterToday() {}
-    function printEntries() {}
-    function exportExcel() {}
-    function exportPDF() {}
-  </script>
+    return match;
+  });
+
+  document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
+
+  // Update staff dropdown
+  const staffSelect = document.getElementById("staffFilter");
+  const currentVal = staffSelect.value;
+  staffSelect.innerHTML = "<option>All Staff</option>";
+  staffSet.forEach(name => {
+    const opt = document.createElement("option");
+    opt.textContent = name;
+    staffSelect.appendChild(opt);
+  });
+  staffSelect.value = currentVal;
+
+  currentPage = 1;
+  renderTablePage();
+}
+
+function renderTablePage() {
+  const tbody = document.querySelector("#entryTable tbody");
+  tbody.innerHTML = "";
+
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageRows = filteredRows.slice(start, end);
+
+  pageRows.forEach(([date, wal, closing, note, code, name]) => {
+    const tr = document.createElement("tr");
+    [date, wal, closing, note, code, name].forEach(val => {
+      const td = document.createElement("td");
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  renderPagination();
+}
+
+function renderPagination() {
+  let container = document.getElementById("pagination");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "pagination";
+    container.style.textAlign = "center";
+    container.style.marginTop = "10px";
+    document.querySelector(".table-box").appendChild(container);
+  }
+
+  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+  container.innerHTML = `
+    <button ${currentPage === 1 ? "disabled" : ""} onclick="prevPage()">Previous</button>
+    Page ${currentPage} of ${totalPages}
+    <button ${currentPage === totalPages ? "disabled" : ""} onclick="nextPage()">Next</button>
+  `;
+}
+
+function nextPage() {
+  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    renderTablePage();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    renderTablePage();
+  }
+}
+
+function showReset() {
+  document.getElementById('passwordBox').style.display = 'block';
+  const list = document.getElementById("passwordList");
+  const staffUsers = JSON.parse(localStorage.getItem('staffUsers') || "{}");
+  list.innerHTML = Object.entries(staffUsers).map(
+    ([id, name]) => \`<div>\${id} - \${name} 
+      <input type="text" id="newpass-\${id}" placeholder="New Password" />
+      <button onclick="resetPassword('\${id}')">Reset</button>
+    </div>\`).join("");
+}
+
+function resetPassword(id) {
+  const newPass = document.getElementById('newpass-' + id).value;
+  if (!newPass) return alert("Enter new password for " + id);
+  const users = JSON.parse(localStorage.getItem('staffUsers') || "{}");
+  users[id] = newPass;
+  localStorage.setItem('staffUsers', JSON.stringify(users));
+  alert("Password updated for " + id);
+}
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = "index.html";
+}
+
+window.onload = () => {
+  if (sessionStorage.getItem("role") !== "boss") {
+    window.location.href = "index.html";
+  } else {
+    refreshData();
+  }
+};
+</script>
+
 </body>
 </html>
