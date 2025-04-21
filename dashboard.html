@@ -1,217 +1,126 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Boss Dashboard - Prakalya Netzone</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Dashboard - Paginated</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #eef3f9;
       padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #0056d6;
-    }
-    .filters, .table-box {
-      max-width: 1000px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      margin: 5px;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
     }
     th, td {
+      padding: 8px 12px;
       border: 1px solid #ccc;
-      padding: 8px;
       text-align: center;
     }
     th {
       background-color: #dceeff;
     }
-    #totalBox {
-      margin-top: 10px;
-      text-align: right;
-      font-weight: bold;
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .pagination button {
+      padding: 8px 12px;
+      margin: 0 5px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    .pagination button:disabled {
+      background: #aaa;
     }
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
+  <h2>PRAKALYA NETZONE - Dashboard Paginated</h2>
 
-  <div class="filters">
-    <label>From: <input type="date" id="fromDate" /></label>
-    <label>To: <input type="date" id="toDate" /></label>
-    <label>Wallet:
-      <select id="walletFilter">
-        <option value="All">All Wallets</option>
-<option>BOB SATHYA WALLET</option>
-<option>HDFC MURUGESAN WALLET</option>
-<option>SBI WALLET</option>
-<option>SURIYA GPAY WALLET</option>
-<option>CSC MURUGESAN WALLET</option>
-<option>BOB MURUGESAN WALLET</option>
-<option>ROI NET MURUGESAN WALLET</option>
-<option>IOB MURUGESAN WALLET</option>
-<option>CSC SATHYA WALLET</option>
-<option>ROI NET PRASANNA WALLET</option>
-<option>ROINET SATHYA WALLET</option>
-<option>SBI PRASANNA WALLET</option>
-<option>INDIAN OVERSEAS BANK WALLET</option>
-<option>TNESVAI WALLET</option>
-<option>PAY BINGO WALLET</option>
-<option>MOS WALLET</option>
-<option>BARODA FASTTAG WALLET</option>
-<option>SARAVANAN CREDIT WALLET</option>
-<option>GPAY SETTLEMENT WALLET</option>
-<option>SARAVANA BINGO WALLET</option>
-        <option>BOB SATHYA</option>
-        <option>HDFC MURUGESAN</option>
-        <option>SBI</option>
-        <option>SURIYA GPAY</option>
-        <option>CSC MURUGESAN</option>
-        <option>OTHERS 1</option>
-        <option>OTHERS 2</option>
-        <option>OTHERS 3</option>
-        <option>OTHERS 4</option>
-      </select>
-    </label>
-    <label>Staff:
-      <select id="staffFilter">
-        <option value="All">All Staff</option>
-      </select>
-    </label>
-    <button onclick="refreshData()">🔁 Refresh</button>
-    <button onclick="filterToday()">🗓 Today</button>
-    <button onclick="printEntries()">🖨 Print</button>
-    <button onclick="exportToExcel()">📥 Export to Excel</button>
-    <button onclick="exportToPDF()">📥 Export to PDF</button>
-    <button onclick="logout()">🚪 Logout</button>
-    <div id="totalBox">Total: ₹0</div>
-  </div>
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>2025-04-20</td><td>Wallet 1</td><td>100</td><td>Note 1</td><td>2</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 2</td><td>200</td><td>Note 2</td><td>3</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 3</td><td>300</td><td>Note 3</td><td>4</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 4</td><td>400</td><td>Note 4</td><td>5</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 5</td><td>500</td><td>Note 5</td><td>1</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 6</td><td>600</td><td>Note 6</td><td>2</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 7</td><td>700</td><td>Note 7</td><td>3</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 8</td><td>800</td><td>Note 8</td><td>4</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 9</td><td>900</td><td>Note 9</td><td>5</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 10</td><td>1000</td><td>Note 10</td><td>1</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 11</td><td>1100</td><td>Note 11</td><td>2</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 12</td><td>1200</td><td>Note 12</td><td>3</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 13</td><td>1300</td><td>Note 13</td><td>4</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 14</td><td>1400</td><td>Note 14</td><td>5</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 15</td><td>1500</td><td>Note 15</td><td>1</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 16</td><td>1600</td><td>Note 16</td><td>2</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 17</td><td>1700</td><td>Note 17</td><td>3</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 18</td><td>1800</td><td>Note 18</td><td>4</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 19</td><td>1900</td><td>Note 19</td><td>5</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 20</td><td>2000</td><td>Note 20</td><td>1</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 21</td><td>2100</td><td>Note 21</td><td>2</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 22</td><td>2200</td><td>Note 22</td><td>3</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 23</td><td>2300</td><td>Note 23</td><td>4</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 24</td><td>2400</td><td>Note 24</td><td>5</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 25</td><td>2500</td><td>Note 25</td><td>1</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 26</td><td>2600</td><td>Note 26</td><td>2</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 27</td><td>2700</td><td>Note 27</td><td>3</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 28</td><td>2800</td><td>Note 28</td><td>4</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 29</td><td>2900</td><td>Note 29</td><td>5</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 30</td><td>3000</td><td>Note 30</td><td>1</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 31</td><td>3100</td><td>Note 31</td><td>2</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 32</td><td>3200</td><td>Note 32</td><td>3</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 33</td><td>3300</td><td>Note 33</td><td>4</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 34</td><td>3400</td><td>Note 34</td><td>5</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 35</td><td>3500</td><td>Note 35</td><td>1</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 36</td><td>3600</td><td>Note 36</td><td>2</td><td>Staff 1</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 37</td><td>3700</td><td>Note 37</td><td>3</td><td>Staff 2</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 38</td><td>3800</td><td>Note 38</td><td>4</td><td>Staff 3</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 39</td><td>3900</td><td>Note 39</td><td>5</td><td>Staff 4</td></tr>
+<tr><td>2025-04-20</td><td>Wallet 40</td><td>4000</td><td>Note 40</td><td>1</td><td>Staff 1</td></tr>
+    </tbody>
+  </table>
 
-  <div class="table-box">
-    <table id="entryTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Wallet</th>
-          <th>Closing</th>
-          <th>Note</th>
-          <th>Staff Code</th>
-          <th>Staff Name</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div class="pagination">
+    <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+    <span id="pageNum">Page 1</span>
+    <button id="nextBtn" onclick="changePage(1)">Next</button>
   </div>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
+  const rows = Array.from(document.querySelectorAll("#dataTable tbody tr"));
+  const rowsPerPage = 20;
+  let currentPage = 1;
 
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}
-
-function filterToday() {
-  const today = new Date().toISOString().split("T")[0];
-  document.getElementById("fromDate").value = today;
-  document.getElementById("toDate").value = today;
-  refreshData();
-}
-
-function printEntries() {
-  const original = document.body.innerHTML;
-  const content = document.querySelector(".table-box").innerHTML;
-  const title = document.querySelector("h1").outerHTML;
-  document.body.innerHTML = title + content;
-  window.print();
-  document.body.innerHTML = original;
-}
-
-function exportToExcel() {
-  const table = document.getElementById("entryTable");
-  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-  XLSX.writeFile(wb, "dashboard_data.xlsx");
-}
-
-function exportToPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Dashboard Entries", 14, 16);
-  const table = document.getElementById("entryTable");
-  doc.autoTable({ html: table });
-  doc.save("dashboard_data.pdf");
-}
-
-async function refreshData() {
-  const res = await fetch(sheetURL);
-  const csv = await res.text();
-  const rows = csv.trim().split("\n").map(r => r.split(","));
-  const tbody = document.querySelector("#entryTable tbody");
-  tbody.innerHTML = "";
-
-  const from = document.getElementById("fromDate").value || "0000-00-00";
-  const to = document.getElementById("toDate").value || "9999-12-31";
-  const wallet = document.getElementById("walletFilter").value;
-  const staff = document.getElementById("staffFilter").value;
-
-  const staffSet = new Set();
-  let total = 0;
-
-  rows.slice(1).forEach(([date, wal, closing, note, code, name]) => {
-    if (date < from || date > to) return;
-    if (wallet !== "All" && wal !== wallet) return;
-    if (staff !== "All" && name !== staff) return;
-
-    const tr = document.createElement("tr");
-    [date, wal, closing, note, code, name].forEach(val => {
-      const td = document.createElement("td");
-      td.textContent = val;
-      tr.appendChild(td);
+  function displayRows() {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    rows.forEach((row, index) => {
+      row.style.display = (index >= start && index < end) ? "" : "none";
     });
-    tbody.appendChild(tr);
-    total += parseFloat(closing);
-    staffSet.add(name);
-  });
-
-  document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
-
-  const staffSelect = document.getElementById("staffFilter");
-  const currentVal = staffSelect.value;
-  staffSelect.innerHTML = "<option value='All'>All Staff</option>";
-  staffSet.forEach(name => {
-    const opt = document.createElement("option");
-    opt.textContent = name;
-    staffSelect.appendChild(opt);
-  });
-  staffSelect.value = currentVal;
-}
-
-window.onload = () => {
-  if (sessionStorage.getItem("role") !== "boss") {
-    window.location.href = "index.html";
-  } else {
-    refreshData();
+    document.getElementById("pageNum").innerText = `Page ${currentPage}`;
+    document.getElementById("prevBtn").disabled = currentPage === 1;
+    document.getElementById("nextBtn").disabled = end >= rows.length;
   }
-};
+
+  function changePage(offset) {
+    currentPage += offset;
+    displayRows();
+  }
+
+  window.onload = displayRows;
 </script>
 </body>
 </html>
