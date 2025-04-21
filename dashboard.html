@@ -65,7 +65,9 @@ async function refreshData() {
   const staffSet = new Set();
   let total = 0;
 
-  filteredRows = rows.slice(1).filter(([date, wal, closing, note, code, name]) => {
+  filteredRows = rows.slice(1).filter(row => {
+  const [date, wal, closing, note, code, name] = row;
+  if (!date || !wal || !closing || !name) return false;
     const match = date >= from && date <= to &&
                   (wallet === "All Wallets" || wal === wallet) &&
                   (staff === "All Staff" || name === staff);
