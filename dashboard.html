@@ -14,7 +14,6 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #dceeff; }
     #totalBox { margin-top: 10px; text-align: right; font-weight: bold; }
-    #pagination { text-align: center; margin-top: 15px; }
   </style>
 </head>
 <body>
@@ -23,10 +22,10 @@
     <label>From: <input type="date" id="fromDate" /></label>
     <label>To: <input type="date" id="toDate" /></label>
     <label>Wallet:
-      <select id="walletFilter"><option>All Wallets</option></select>
+      <select id="walletFilter"><option value="">All Wallets</option></select>
     </label>
     <label>Staff:
-      <select id="staffFilter"><option>All Staff</option></select>
+      <select id="staffFilter"><option value="">All Staff</option></select>
     </label>
     <button onclick="refreshData()">🔁 Refresh</button>
     <button onclick="filterToday()">📅 Today</button>
@@ -42,156 +41,123 @@
       <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th></tr></thead>
       <tbody></tbody>
     </table>
-    <div id="pagination"></div>
   </div>
   <div class="password-box" id="passwordBox" style="display:none;">
     <h3>👥 Manage Staff Passwords</h3>
     <div id="passwordList"></div>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
 
-let filteredRows = [];
-let currentPage = 1;
-const rowsPerPage = 20;
+<script>
+  let allEntries = [];
 
-async function refreshData() {
-  const res = await fetch(sheetURL);
-  const csv = await res.text();
-  const rows = csv.trim().split("\n").map(r => r.split(","));
-  const from = document.getElementById("fromDate").value || "0000-00-00";
-  const to = document.getElementById("toDate").value || "9999-12-31";
-  const wallet = document.getElementById("walletFilter").value;
-  const staff = document.getElementById("staffFilter").value;
-  const staffSet = new Set();
-  let total = 0;
-
-  filteredRows = rows.slice(1).filter(row => {
-    const [date, wal, closing, note, code, name] = row;
-    if (!date || !wal || !closing || !name) return false;
-    const match = date >= from && date <= to &&
-                  (wallet === "All Wallets" || wal === wallet) &&
-                  (staff === "All Staff" || name === staff);
-    if (match) {
-      total += parseFloat(closing || "0");
-      staffSet.add(name);
-    }
-    return match;
-  });
-
-  document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
-  const staffSelect = document.getElementById("staffFilter");
-  const currentVal = staffSelect.value;
-  staffSelect.innerHTML = "<option>All Staff</option>";
-  staffSet.forEach(name => {
-    const opt = document.createElement("option");
-    opt.textContent = name;
-    staffSelect.appendChild(opt);
-  });
-  staffSelect.value = currentVal;
-
-  currentPage = 1;
-  renderTablePage();
-}
-
-function renderTablePage() {
-  const tbody = document.querySelector("#entryTable tbody");
-  tbody.innerHTML = "";
-  const start = (currentPage - 1) * rowsPerPage;
-  const end = start + rowsPerPage;
-  const pageRows = filteredRows.slice(start, end);
-
-  pageRows.forEach(([date, wal, closing, note, code, name]) => {
-    const tr = document.createElement("tr");
-    [date, wal, closing, note, code, name].forEach(val => {
-      const td = document.createElement("td");
-      td.textContent = val;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-
-  renderPagination();
-}
-
-function renderPagination() {
-  const container = document.getElementById("pagination");
-  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-  container.innerHTML = `
-    <button ${currentPage === 1 ? "disabled" : ""} onclick="prevPage()">Previous</button>
-    Page ${currentPage} of ${totalPages}
-    <button ${currentPage === totalPages ? "disabled" : ""} onclick="nextPage()">Next</button>
-  `;
-}
-
-function nextPage() { if (currentPage < Math.ceil(filteredRows.length / rowsPerPage)) { currentPage++; renderTablePage(); } }
-function prevPage() { if (currentPage > 1) { currentPage--; renderTablePage(); } }
-
-function exportExcel() {
-  const table = document.getElementById("entryTable");
-  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-  XLSX.writeFile(wb, "dashboard_data.xlsx");
-}
-
-function exportPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Dashboard Entries", 14, 16);
-  doc.autoTable({ html: '#entryTable' });
-  doc.save("dashboard_data.pdf");
-}
-
-function printEntries() {
-  const printWindow = window.open("", "", "width=1000,height=700");
-  printWindow.document.write("<html><head><title>Print</title></head><body>");
-  printWindow.document.write(document.querySelector("h1").outerHTML);
-  printWindow.document.write(document.getElementById("entryTable").outerHTML);
-  printWindow.document.write("</body></html>");
-  printWindow.document.close();
-  printWindow.print();
-}
-
-function filterToday() {
-  const today = new Date().toISOString().split("T")[0];
-  document.getElementById("fromDate").value = today;
-  document.getElementById("toDate").value = today;
-  refreshData();
-}
-
-function logout() {
-  sessionStorage.clear();
-  window.location.href = "index.html";
-}
-
-function showReset() {
-  document.getElementById('passwordBox').style.display = 'block';
-  const list = document.getElementById("passwordList");
-  const staffUsers = JSON.parse(localStorage.getItem('staffUsers') || "{}");
-  list.innerHTML = Object.entries(staffUsers).map(
-    ([id, pass]) => \`<div>\${id}
-      <input type="text" id="newpass-\${id}" placeholder="New Password" />
-      <button onclick="resetPassword('\${id}')">Reset</button>
-    </div>\`).join("");
-}
-
-function resetPassword(id) {
-  const newPass = document.getElementById('newpass-' + id).value;
-  if (!newPass) return alert("Enter new password");
-  const users = JSON.parse(localStorage.getItem('staffUsers') || "{}");
-  users[id] = newPass;
-  localStorage.setItem('staffUsers', JSON.stringify(users));
-  alert("Password updated for " + id);
-}
-
-window.onload = () => {
-  if (sessionStorage.getItem("role") !== "boss") {
-    window.location.href = "index.html";
-  } else {
-    refreshData();
+  function refreshData() {
+    fetch('https://script.google.com/macros/s/AKfycbwccYy-IynGKGkkfmdKCRYaL84hIiPPI5Axq61oj6uoxcLE1AudwYb8PR9_2CKHZLfw/exec')
+      .then(res => res.json())
+      .then(data => {
+        allEntries = data;
+        populateTable(allEntries);
+        populateFilters(allEntries);
+      });
   }
-};
-  </script>
+
+  function populateTable(entries) {
+    const tbody = document.querySelector('#entryTable tbody');
+    tbody.innerHTML = "";
+    let total = 0;
+    entries.forEach(row => {
+      if (applyFilters(row)) {
+        total += parseFloat(row.closing || 0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.date}</td><td>${row.wallet}</td><td>${row.closing}</td><td>${row.note}</td><td>${row.userCode}</td><td>${row.staffName}</td>`;
+        tbody.appendChild(tr);
+      }
+    });
+    document.getElementById('totalBox').innerText = `Total: ₹${total}`;
+  }
+
+  function populateFilters(entries) {
+    const walletSet = new Set();
+    const staffSet = new Set();
+    entries.forEach(row => {
+      walletSet.add(row.wallet);
+      staffSet.add(row.staffName);
+    });
+
+    const walletSelect = document.getElementById('walletFilter');
+    const staffSelect = document.getElementById('staffFilter');
+    walletSelect.innerHTML = '<option value="">All Wallets</option>';
+    staffSelect.innerHTML = '<option value="">All Staff</option>';
+
+    [...walletSet].sort().forEach(wallet => {
+      walletSelect.innerHTML += `<option>${wallet}</option>`;
+    });
+    [...staffSet].sort().forEach(staff => {
+      staffSelect.innerHTML += `<option>${staff}</option>`;
+    });
+  }
+
+  function applyFilters(row) {
+    const from = document.getElementById('fromDate').value;
+    const to = document.getElementById('toDate').value;
+    const wallet = document.getElementById('walletFilter').value;
+    const staff = document.getElementById('staffFilter').value;
+
+    if (from && row.date < from) return false;
+    if (to && row.date > to) return false;
+    if (wallet && row.wallet !== wallet) return false;
+    if (staff && row.staffName !== staff) return false;
+    return true;
+  }
+
+  function filterToday() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fromDate').value = today;
+    document.getElementById('toDate').value = today;
+    populateTable(allEntries);
+  }
+
+  function printEntries() {
+    window.print();
+  }
+
+  function exportExcel() {
+    alert("Export to Excel clicked");
+  }
+
+  function exportPDF() {
+    alert("Export to PDF clicked");
+  }
+
+  function showReset() {
+    document.getElementById('passwordBox').style.display = 'block';
+    const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
+    const list = document.getElementById("passwordList");
+    list.innerHTML = Object.entries(staffUsers).map(([id, pass]) =>
+      `<div>${id} <input type="text" placeholder="New Password" id="pw_${id}" />
+       <button onclick="resetPassword('${id}')">Reset</button></div>`
+    ).join("");
+  }
+
+  function resetPassword(id) {
+    const newPw = document.getElementById("pw_" + id).value;
+    if (!newPw) {
+      alert("Password cannot be empty");
+      return;
+    }
+    const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
+    staffUsers[id] = newPw;
+    localStorage.setItem("staffUsers", JSON.stringify(staffUsers));
+    alert("Password updated for " + id);
+  }
+
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = "login.html";
+  }
+
+  // Auto-fetch on load
+  refreshData();
+</script>
+
 </body>
 </html>
