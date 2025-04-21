@@ -45,69 +45,7 @@
     <h3>👥 Manage Staff Passwords</h3>
     <div id="passwordList"></div>
   </div>
-  
-<script>
-  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv";
-  let allRows = [];
-  let currentPage = 1;
-  const rowsPerPage = 20;
-
-  function refreshData() {
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(csv => {
-        allRows = csv.trim().split("\n").map(row => row.split(",")).slice(1);
-        currentPage = 1;
-        renderTable();
-      });
-  }
-
-  function renderTable() {
-    const from = document.getElementById("fromDate").value || "0000-00-00";
-    const to = document.getElementById("toDate").value || "9999-12-31";
-    const wallet = document.getElementById("walletFilter").value;
-    const staff = document.getElementById("staffFilter").value;
-
-    const tbody = document.querySelector("#entryTable tbody");
-    tbody.innerHTML = "";
-
-    const filtered = allRows.filter(([date, wal, close, note, code, name]) => {
-      return date >= from && date <= to &&
-             (wallet === "All Wallets" || wal === wallet) &&
-             (staff === "All Staff" || name === staff);
-    });
-
-    const total = filtered.reduce((sum, row) => sum + parseFloat(row[2] || 0), 0);
-    document.getElementById("totalBox").textContent = "Total: ₹" + total.toLocaleString();
-
-    const start = (currentPage - 1) * rowsPerPage;
-    const pageRows = filtered.slice(start, start + rowsPerPage);
-    pageRows.forEach(([date, wal, close, note, code, name]) => {
-      const tr = document.createElement("tr");
-      [date, wal, close, note, code, name].forEach(text => {
-        const td = document.createElement("td");
-        td.textContent = text;
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-  }
-
-  function filterToday() {
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("fromDate").value = today;
-    document.getElementById("toDate").value = today;
-    renderTable();
-  }
-
-  function logout() {
-    sessionStorage.clear();
-    window.location.href = "index.html";
-  }
-
-  window.onload = refreshData;
-</script>
-
+  <script>
     const staffUsers = [{ id: "001", name: "user" }, { id: "002", name: "SEKAR" }];
     function showReset() {
       document.getElementById('passwordBox').style.display = 'block';
