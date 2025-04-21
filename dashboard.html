@@ -100,7 +100,7 @@
     if (from && row.date < from) return false;
     if (to && row.date > to) return false;
     if (wallet && row.wallet !== wallet) return false;
-    if (staff && row.staffName !== staff) return false;
+    if (staff && row.staffName.toLowerCase() !== staff.toLowerCase()) return false;
     return true;
   }
 
