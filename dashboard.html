@@ -5,6 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Boss Dashboard - Prakalya Netzone</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
     body { font-family: Arial; background: #eef3f9; padding: 20px; }
     h1 { text-align: center; color: #0056d6; }
@@ -24,6 +27,7 @@
     }
     th { background-color: #dceeff; }
     #totalBox { margin-top: 10px; text-align: right; font-weight: bold; }
+    #pagination { text-align: center; margin-top: 15px; }
   </style>
 </head>
 <body>
@@ -40,6 +44,9 @@
     <button onclick="refreshData()">🔁 Refresh</button>
     <button onclick="filterToday()">📅 Today</button>
     <button onclick="printEntries()">📋 Print</button>
+    <button onclick="exportExcel()">📤 Export to Excel</button>
+    <button onclick="exportPDF()">📤 Export to PDF</button>
+    <button onclick="showReset()">🔐 Reset Password</button>
     <button onclick="logout()">🚪 Logout</button>
     <div id="totalBox">Total: ₹0</div>
   </div>
@@ -48,10 +55,15 @@
       <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th></tr></thead>
       <tbody></tbody>
     </table>
+    <div id="pagination"></div>
+  </div>
+  <div class="password-box" id="passwordBox" style="display:none;">
+    <h3>👥 Reset Staff Passwords</h3>
+    <div id="passwordList"></div>
   </div>
 
 <script>
-  let allEntries = [];
+  let allEntries = [], currentPage = 1, rowsPerPage = 20;
 
   function refreshData() {
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv')
@@ -61,53 +73,30 @@
         allEntries = rows.slice(1).map(r => ({
           date: r[0], wallet: r[1], closing: r[2], note: r[3], userCode: r[4], staffName: r[5]
         }));
-        populateTable(allEntries);
         populateFilters(allEntries);
+        renderTablePage();
       });
   }
 
-  function populateTable(entries) {
-    const tbody = document.querySelector('#entryTable tbody');
-    tbody.innerHTML = "";
-    let total = 0;
-    entries.forEach(row => {
-      if (applyFilters(row)) {
-        total += parseFloat(row.closing || 0);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${row.date}</td><td>${row.wallet}</td><td>${row.closing}</td><td>${row.note}</td><td>${row.userCode}</td><td>${row.staffName}</td>`;
-        tbody.appendChild(tr);
-      }
-    });
-    document.getElementById('totalBox').innerText = `Total: ₹${total}`;
-  }
-
   function populateFilters(entries) {
-    const walletSet = new Set();
-    const staffSet = new Set();
-    entries.forEach(row => {
-      walletSet.add(row.wallet);
-      staffSet.add(row.staffName);
+    const walletSet = new Set(), staffSet = new Set();
+    entries.forEach(r => {
+      walletSet.add(r.wallet);
+      staffSet.add(r.staffName);
     });
-
-    const walletSelect = document.getElementById('walletFilter');
-    const staffSelect = document.getElementById('staffFilter');
-    walletSelect.innerHTML = '<option value="">All Wallets</option>';
-    staffSelect.innerHTML = '<option value="">All Staff</option>';
-
-    [...walletSet].sort().forEach(wallet => {
-      walletSelect.innerHTML += `<option value="${wallet}">${wallet}</option>`;
-    });
-    [...staffSet].sort().forEach(staff => {
-      staffSelect.innerHTML += `<option value="${staff}">${staff}</option>`;
-    });
+    const walletSel = document.getElementById("walletFilter");
+    const staffSel = document.getElementById("staffFilter");
+    walletSel.innerHTML = "<option value=''>All Wallets</option>";
+    staffSel.innerHTML = "<option value=''>All Staff</option>";
+    [...walletSet].sort().forEach(w => walletSel.innerHTML += `<option value="${w}">${w}</option>`);
+    [...staffSet].sort().forEach(s => staffSel.innerHTML += `<option value="${s}">${s}</option>`);
   }
 
   function applyFilters(row) {
-    const from = document.getElementById('fromDate').value;
-    const to = document.getElementById('toDate').value;
-    const wallet = document.getElementById('walletFilter').value;
-    const staff = document.getElementById('staffFilter').value;
-
+    const from = document.getElementById("fromDate").value;
+    const to = document.getElementById("toDate").value;
+    const wallet = document.getElementById("walletFilter").value;
+    const staff = document.getElementById("staffFilter").value;
     if (from && row.date < from) return false;
     if (to && row.date > to) return false;
     if (wallet && row.wallet !== wallet) return false;
@@ -115,15 +104,71 @@
     return true;
   }
 
+  function renderTablePage() {
+    const tbody = document.querySelector("#entryTable tbody");
+    tbody.innerHTML = "";
+    const filtered = allEntries.filter(applyFilters);
+    const total = filtered.reduce((sum, r) => sum + parseFloat(r.closing || 0), 0);
+    document.getElementById("totalBox").innerText = `Total: ₹${total.toLocaleString()}`;
+    const start = (currentPage - 1) * rowsPerPage;
+    const pageItems = filtered.slice(start, start + rowsPerPage);
+    pageItems.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.userCode}</td><td>${r.staffName}</td>`;
+      tbody.appendChild(tr);
+    });
+    const totalPages = Math.ceil(filtered.length / rowsPerPage);
+    const pagin = document.getElementById("pagination");
+    pagin.innerHTML = `
+      <button ${currentPage === 1 ? "disabled" : ""} onclick="currentPage--; renderTablePage()">Previous</button>
+      Page ${currentPage} of ${totalPages}
+      <button ${currentPage === totalPages ? "disabled" : ""} onclick="currentPage++; renderTablePage()">Next</button>
+    `;
+  }
+
   function filterToday() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fromDate').value = today;
-    document.getElementById('toDate').value = today;
-    populateTable(allEntries);
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("fromDate").value = today;
+    document.getElementById("toDate").value = today;
+    currentPage = 1;
+    renderTablePage();
   }
 
   function printEntries() {
     window.print();
+  }
+
+  function exportExcel() {
+    const table = document.getElementById("entryTable");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+    XLSX.writeFile(wb, "dashboard_data.xlsx");
+  }
+
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Dashboard Entries", 14, 16);
+    doc.autoTable({ html: "#entryTable" });
+    doc.save("dashboard_data.pdf");
+  }
+
+  function showReset() {
+    document.getElementById("passwordBox").style.display = "block";
+    const users = JSON.parse(localStorage.getItem("staffUsers") || "{}");
+    const list = Object.entries(users).map(([id, pw]) =>
+      `<div>${id}: <input type="text" id="pw_${id}" placeholder="New Password" />
+       <button onclick="resetPassword('${id}')">Reset</button></div>`
+    ).join("");
+    document.getElementById("passwordList").innerHTML = list;
+  }
+
+  function resetPassword(id) {
+    const val = document.getElementById("pw_" + id).value;
+    if (!val) return alert("Enter new password");
+    const users = JSON.parse(localStorage.getItem("staffUsers") || "{}");
+    users[id] = val;
+    localStorage.setItem("staffUsers", JSON.stringify(users));
+    alert("Password updated for " + id);
   }
 
   function logout() {
@@ -131,14 +176,14 @@
     window.location.href = "login.html";
   }
 
-  // Auto-load on page ready
-  refreshData();
+  window.onload = () => {
+    if (sessionStorage.getItem("role") !== "boss") window.location.href = "index.html";
+    else refreshData();
+  };
 
-  // Filter triggers
-  document.getElementById("walletFilter").addEventListener("change", () => populateTable(allEntries));
-  document.getElementById("staffFilter").addEventListener("change", () => populateTable(allEntries));
-  document.getElementById("fromDate").addEventListener("change", () => populateTable(allEntries));
-  document.getElementById("toDate").addEventListener("change", () => populateTable(allEntries));
+  // Refilter on change
+  ["walletFilter","staffFilter","fromDate","toDate"].forEach(id =>
+    document.getElementById(id).addEventListener("change", () => { currentPage = 1; renderTablePage(); }));
 </script>
 </body>
 </html>
