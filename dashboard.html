@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,8 +81,8 @@
   function populateFilters(entries) {
     const walletSet = new Set(), staffSet = new Set();
     entries.forEach(r => {
-      walletSet.add(r.wallet);
-      staffSet.add(r.staffName);
+      walletSet.add(r["Wallet"]);
+      staffSet.add(r["Staff Name"]);
     });
     const walletSel = document.getElementById("walletFilter");
     const staffSel = document.getElementById("staffFilter");
@@ -96,10 +97,10 @@
     const to = document.getElementById("toDate").value;
     const wallet = document.getElementById("walletFilter").value;
     const staff = document.getElementById("staffFilter").value;
-    if (from && row.date < from) return false;
-    if (to && row.date > to) return false;
-    if (wallet && row.wallet !== wallet) return false;
-    if (staff && row.staffName.trim().toLowerCase() !== staff.trim().toLowerCase()) return false;
+    if (from && row["Date"] < from) return false;
+    if (to && row["Date"] > to) return false;
+    if (wallet && row["Wallet"] !== wallet) return false;
+    if (staff && row["Staff Name"].trim().toLowerCase() !== staff.trim().toLowerCase()) return false;
     return true;
   }
 
@@ -107,13 +108,13 @@
     const tbody = document.querySelector("#entryTable tbody");
     tbody.innerHTML = "";
     const filtered = allEntries.filter(applyFilters);
-    const total = filtered.reduce((sum, r) => sum + parseFloat(r.closing || 0), 0);
+    const total = filtered.reduce((sum, r) => sum + parseFloat(r["Closing"] || 0), 0);
     document.getElementById("totalBox").innerText = `Total: ₹${total.toLocaleString()}`;
     const start = (currentPage - 1) * rowsPerPage;
     const pageItems = filtered.slice(start, start + rowsPerPage);
     pageItems.forEach(r => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.userCode}</td><td>${r.staffName}</td>`;
+      tr.innerHTML = `<td>${r["Date"]}</td><td>${r["Wallet"]}</td><td>${r["Closing"]}</td><td>${r["Note"]}</td><td>${r["Staff Code"]}</td><td>${r["Staff Name"]}</td>`;
       tbody.appendChild(tr);
     });
     const totalPages = Math.ceil(filtered.length / rowsPerPage);
