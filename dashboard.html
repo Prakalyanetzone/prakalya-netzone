@@ -47,9 +47,19 @@
     <button onclick="exportExcel()">📤 Export to Excel</button>
     <button onclick="exportPDF()">📤 Export to PDF</button>
     <button onclick="showReset()">🔐 Reset Password</button>
+    <button onclick="showBossReset()">🧑‍💼 Boss Password</button>
     <button onclick="logout()">🚪 Logout</button>
     <div id="totalBox">Total: ₹0</div>
   </div>
+
+  <div class="password-box" id="bossPasswordBox" style="display:none;">
+    <h3>🧑‍💼 Reset Boss Password</h3>
+    <div>
+      <input type="password" id="bossNewPassword" placeholder="New Boss Password" />
+      <button onclick="resetBossPassword()">Update</button>
+    </div>
+  </div>
+
   <div class="table-box">
     <table id="entryTable">
       <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th></tr></thead>
@@ -180,6 +190,18 @@
     if (sessionStorage.getItem("role") !== "boss") window.location.href = "index.html";
     else refreshData();
   };
+
+  
+  function showBossReset() {
+    document.getElementById("bossPasswordBox").style.display = "block";
+  }
+
+  function resetBossPassword() {
+    const pass = document.getElementById("bossNewPassword").value;
+    if (!pass) return alert("Enter new boss password");
+    localStorage.setItem("bossPassword", pass);
+    alert("Boss password updated.");
+  }
 
   // Refilter on change
   ["walletFilter","staffFilter","fromDate","toDate"].forEach(id =>
