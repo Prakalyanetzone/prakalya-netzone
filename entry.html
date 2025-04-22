@@ -111,10 +111,10 @@
       body: data
     })
     .then(() => {
-      alert('Entry submitted successfully');
+      alert('Entry submitted successfully'); document.getElementById('entryForm').reset();
       document.getElementById('entryForm').reset();
     }).catch(() => {
-      alert('Submitted! (Note: Response blocked, but entry succeeded)');
+      alert('Submitted! (Note: Response blocked, but entry succeeded)'); document.getElementById('entryForm').reset();
     });
   }
 
