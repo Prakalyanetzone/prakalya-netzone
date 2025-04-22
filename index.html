@@ -1,99 +1,167 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Prakalya Netzone</title>
+  <meta charset="UTF-8">
+  <title>Index - Prakalya Netzone</title>
   <style>
-    body {
-      font-family: Arial;
-      background: #eef3f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
     }
-    h1 {
-      color: #0056d6;
+    body {
+      background: #0047AB;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .login-box {
       background: white;
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 400px;
+      z-index: 1;
+    }
+    h2 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(to right, #0f52ba, #66ccff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
     }
     input {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
-      font-size: 16px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
     button {
       width: 100%;
       padding: 12px;
-      background-color: #0056d6;
+      background: #0056d6;
       color: white;
       border: none;
-      font-size: 16px;
+      font-weight: bold;
       border-radius: 6px;
-      cursor: pointer;
+      margin-top: 10px;
     }
-    button:hover {
-      background-color: #003eaa;
+    a {
+      color: #0056d6;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .reset-box {
+      display: none;
+      margin-top: 15px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
   <div class="login-box">
-    <input type="text" id="userID" placeholder="User ID" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button onclick="login()">Login</button>
+    <h2>PRAKALYA NETZONE</h2>
+    <form onsubmit="return login(event)">
+      <input id="userid" type="text" placeholder="User ID" required />
+      <input id="password" type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+
+    <p style="text-align:center;margin-top:10px;">
+      <a onclick="showBossReset()">🔑 Forgot Boss Password?</a>
+    </p>
+
+    <div class="reset-box" id="bossResetBox">
+      <button onclick="sendOtp()">📩 Send OTP to Email</button>
+      <input type="text" id="otp" placeholder="Enter OTP">
+      <button onclick="verifyOtp()">Verify OTP</button>
+      <div id="otpVerifiedBox" style="display:none;">
+        <input type="password" id="newBossPassword" placeholder="Enter new boss password" />
+        <button onclick="resetBossPassword()">Reset Password</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    function login() {
-      const user = document.getElementById("userID").value.trim();
-      const pass = document.getElementById("password").value.trim();
+    const defaultBossUser = "Murugesan";
 
-      // 1. Boss login check
-      if (user === "Murugesan" && pass === "Muru@2025") {
+    function login(e) {
+      e.preventDefault();
+      const user = document.getElementById("userid").value;
+      const pass = document.getElementById("password").value;
+
+      const bossPassword = localStorage.getItem("bossPassword") || "Muru@2025";
+
+      if (user === defaultBossUser && pass === bossPassword) {
         sessionStorage.setItem("role", "boss");
         window.location.href = "dashboard.html";
         return;
       }
 
-      // 2. Staff login check
       const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
       if (staffUsers[user] && staffUsers[user] === pass) {
-        const staffName = prompt("Enter your name:");
-        if (!staffName) {
-          alert("Staff name is required.");
-          return;
-        }
-        sessionStorage.setItem("userCode", user);
-        sessionStorage.setItem("staffName", staffName);
         sessionStorage.setItem("role", "staff");
+        sessionStorage.setItem("userCode", user);
         window.location.href = "entry.html";
-      } else {
-        alert("Invalid login credentials.");
+        return;
       }
+
+      alert("Invalid credentials.");
     }
 
-    // Preload staff users 001–010
-    if (!localStorage.getItem("staffUsers")) {
-      const staffUsers = {};
-      for (let i = 1; i <= 10; i++) {
-        const id = i.toString().padStart(3, '0');
-        staffUsers[id] = id;
-      }
-      localStorage.setItem("staffUsers", JSON.stringify(staffUsers));
+    function showBossReset() {
+      document.getElementById("bossResetBox").style.display = "block";
+    }
+
+    function sendOtp() {
+      fetch("https://script.google.com/macros/s/AKfycbyGi4WgSLTCHhXORWFCkGETqWgG4i37oFH3qlmHFTE5FuRur-a-wQqxQJVBGZuXr6B1wQ/exec", {
+        method: "POST",
+        body: new URLSearchParams({ action: "sendOtp" })
+      })
+      .then(res => res.text())
+      .then(txt => {
+        if (txt === "sent") {
+          alert("OTP sent to prakalyawalletentry@gmail.com");
+        } else {
+          alert("Error sending OTP.");
+        }
+      });
+    }
+
+    function verifyOtp() {
+      const otp = document.getElementById("otp").value.trim();
+      if (!otp) return alert("Enter OTP");
+      fetch("https://script.google.com/macros/s/AKfycbyGi4WgSLTCHhXORWFCkGETqWgG4i37oFH3qlmHFTE5FuRur-a-wQqxQJVBGZuXr6B1wQ/exec", {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "verifyOtp",
+          otp: otp
+        })
+      })
+      .then(res => res.text())
+      .then(txt => {
+        if (txt === "verified") {
+          alert("OTP verified. You may now reset the password.");
+          document.getElementById("otpVerifiedBox").style.display = "block";
+        } else {
+          alert("Invalid OTP");
+        }
+      });
+    }
+
+    function resetBossPassword() {
+      const newPass = document.getElementById("newBossPassword").value.trim();
+      if (!newPass) return alert("Please enter a new password");
+      localStorage.setItem("bossPassword", newPass);
+      alert("Boss password has been updated.");
+      document.getElementById("bossResetBox").style.display = "none";
+      document.getElementById("otpVerifiedBox").style.display = "none";
     }
   </script>
 </body>
