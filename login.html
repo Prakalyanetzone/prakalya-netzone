@@ -68,8 +68,13 @@
     </p>
 
     <div class="reset-box" id="bossResetBox">
-      <input type="password" id="newBossPassword" placeholder="Enter new boss password" />
-      <button onclick="resetBossPassword()">Reset Password</button>
+      <button onclick="sendOtp()">📩 Send OTP to Email</button>
+      <input type="text" id="otp" placeholder="Enter OTP">
+      <button onclick="verifyOtp()">Verify OTP</button>
+      <div id="otpVerifiedBox" style="display:none;">
+        <input type="password" id="newBossPassword" placeholder="Enter new boss password" />
+        <button onclick="resetBossPassword()">Reset Password</button>
+      </div>
     </div>
   </div>
 
@@ -104,12 +109,49 @@
       document.getElementById("bossResetBox").style.display = "block";
     }
 
+    function sendOtp() {
+      fetch("https://script.google.com/macros/s/AKfycbyGi4WgSLTCHhXORWFCkGETqWgG4i37oFH3qlmHFTE5FuRur-a-wQqxQJVBGZuXr6B1wQ/exec", {
+        method: "POST",
+        body: new URLSearchParams({ action: "sendOtp" })
+      })
+      .then(res => res.text())
+      .then(txt => {
+        if (txt === "sent") {
+          alert("OTP sent to prakalyawalletentry@gmail.com");
+        } else {
+          alert("Error sending OTP.");
+        }
+      });
+    }
+
+    function verifyOtp() {
+      const otp = document.getElementById("otp").value.trim();
+      if (!otp) return alert("Enter OTP");
+      fetch("https://script.google.com/macros/s/AKfycbyGi4WgSLTCHhXORWFCkGETqWgG4i37oFH3qlmHFTE5FuRur-a-wQqxQJVBGZuXr6B1wQ/exec", {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "verifyOtp",
+          otp: otp
+        })
+      })
+      .then(res => res.text())
+      .then(txt => {
+        if (txt === "verified") {
+          alert("OTP verified. You may now reset the password.");
+          document.getElementById("otpVerifiedBox").style.display = "block";
+        } else {
+          alert("Invalid OTP");
+        }
+      });
+    }
+
     function resetBossPassword() {
       const newPass = document.getElementById("newBossPassword").value.trim();
       if (!newPass) return alert("Please enter a new password");
       localStorage.setItem("bossPassword", newPass);
       alert("Boss password has been updated.");
       document.getElementById("bossResetBox").style.display = "none";
+      document.getElementById("otpVerifiedBox").style.display = "none";
     }
   </script>
 </body>
