@@ -5,23 +5,29 @@
   <meta charset="UTF-8">
   <title>Login - Prakalya Netzone</title>
   <style>
-    body {
+    html, body {
       margin: 0;
-      font-family: Arial;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+    body {
       background: url('A_digitally_created_composite_image_depicts_an_off.png') no-repeat center center fixed;
       background-size: cover;
-      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .overlay {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%;
+      top: 0;
+      left: 0;
       height: 100%;
+      width: 100%;
       background-color: rgba(0,0,0,0.6);
       z-index: 0;
     }
     .login-box {
-      position: relative;
       z-index: 1;
       background: white;
       padding: 30px;
@@ -29,7 +35,15 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
       width: 90%;
       max-width: 400px;
-      margin: 100px auto;
+    }
+    h2 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(to right, #0f52ba, #66ccff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
     }
     input {
       width: 100%;
@@ -47,15 +61,6 @@
       font-weight: bold;
       border-radius: 6px;
       margin-top: 10px;
-    }
-    h2 {
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      background: linear-gradient(to right, #0f52ba, #66ccff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
     }
     a {
       color: #0056d6;
