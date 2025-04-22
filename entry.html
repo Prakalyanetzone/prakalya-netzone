@@ -5,52 +5,127 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Staff Entry - Prakalya Netzone</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #eef3f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #0056d6;
+      margin: 20px 0;
+    }
+    .entry-box {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #0056d6;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003d9a;
+    }
+  </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
-  <form id="entryForm" onsubmit="submitEntry(); return false;">
-    <input id="date" type="date" required><br>
-    <input id="wallet" placeholder="Wallet" required><br>
-    <input id="closing" placeholder="Closing Balance" required><br>
-    <input id="note" placeholder="Note"><br>
-    <input id="staffName" placeholder="Staff Name" required><br>
+<h1>PRAKALYA NETZONE</h1>
+<form id="entryForm" onsubmit="submitEntry(); return false;">
+  <div class="entry-box">
+    <input id="date" required type="date"/>
+    <select id="wallet" required>
+      <option value="">Select Wallet</option>
+      <option value="BOB SATHYA WALLET">BOB SATHYA WALLET</option>
+<option value="HDFC MURUGESAN WALLET">HDFC MURUGESAN WALLET</option>
+<option value="SBI WALLET">SBI WALLET</option>
+<option value="SURIYA GPAY WALLET">SURIYA GPAY WALLET</option>
+<option value="CSC MURUGESAN WALLET">CSC MURUGESAN WALLET</option>
+<option value="BOB MURUGESAN WALLET">BOB MURUGESAN WALLET</option>
+<option value="ROI NET MURUGESAN WALLET">ROI NET MURUGESAN WALLET</option>
+<option value="IOB MURUGESAN WALLET">IOB MURUGESAN WALLET</option>
+<option value="CSC SATHYA WALLET">CSC SATHYA WALLET</option>
+<option value="ROI NET PRASANNA WALLET">ROI NET PRASANNA WALLET</option>
+<option value="ROINET SATHYA WALLET">ROINET SATHYA WALLET</option>
+<option value="SBI PRASANNA WALLET">SBI PRASANNA WALLET</option>
+<option value="INDIAN OVERSEAS BANK WALLET">INDIAN OVERSEAS BANK WALLET</option>
+<option value="TNESVAI WALLET">TNESVAI WALLET</option>
+<option value="PAY BINGO WALLET">PAY BINGO WALLET</option>
+<option value="MOS WALLET">MOS WALLET</option>
+<option value="BARODA FASTTAG WALLET">BARODA FASTTAG WALLET</option>
+<option value="SARAVANAN CREDIT WALLET">SARAVANAN CREDIT WALLET</option>
+<option value="GPAY SETTLEMENT WALLET">GPAY SETTLEMENT WALLET</option>
+<option value="SARAVANA BINGO WALLET">SARAVANA BINGO WALLET</option>
+    </select>
+    <input id="closing" placeholder="Closing Balance" required type="number"/>
+    <textarea id="note" placeholder="Notes (if any)"></textarea>
+    <input id="staffName" placeholder="Enter Your Name" required type="text"/>
     <button type="submit">Submit</button>
-  </form>
-  <script>
-    const userCode = "001"; // For demo/testing
+    <button type="button" onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;">Logout</button>
+  </div>
+</form>
 
-    function submitEntry() {
-      const date = document.getElementById("date").value;
-      const wallet = document.getElementById("wallet").value;
-      const closing = document.getElementById("closing").value;
-      const note = document.getElementById("note").value;
-      const staffName = document.getElementById("staffName").value;
+<script>
+  const userCode = "001"; // Replace with sessionStorage.getItem('userCode') if using login
 
-      const data = new URLSearchParams();
-      data.append("date", date);
-      data.append("wallet", wallet);
-      data.append("closing", closing);
-      data.append("note", note);
-      data.append("userCode", userCode);
-      data.append("staffName", staffName);
+  function submitEntry() {
+    const date = document.getElementById('date').value;
+    const wallet = document.getElementById('wallet').value.trim();
+    const closing = document.getElementById('closing').value.trim();
+    const note = document.getElementById('note').value.trim();
+    const staffName = document.getElementById('staffName').value.trim();
 
-      fetch("https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec", {
-        method: "POST",
-        body: data
-      })
-      .then(res => res.text())
-      .then(response => {
-        if (response === "Success") {
-          alert("Entry submitted successfully");
-          document.getElementById("entryForm").reset();
-        } else {
-          alert("Failed to submit");
-        }
-      })
-      .catch(err => {
-        alert("Error: " + err);
-      });
+    if (!date || !wallet || !closing || !staffName) {
+      alert('Please fill all required fields');
+      return;
     }
-  </script>
+
+    const data = new URLSearchParams();
+    data.append('date', date);
+    data.append('wallet', wallet);
+    data.append('closing', closing);
+    data.append('note', note);
+    data.append('userCode', userCode);
+    data.append('staffName', staffName);
+
+    fetch('https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec', {
+      method: 'POST',
+      body: data
+    })
+    .then(res => res.text())
+    .then(response => {
+      if (response === 'Success') {
+        alert('Entry submitted successfully');
+        document.getElementById('entryForm').reset();
+      } else {
+        alert('Failed to submit');
+      }
+    })
+    .catch(err => alert('Error: ' + err));
+  }
+
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+  }
+</script>
 </body>
 </html>
