@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Boss Dashboard - Prakalya Netzone</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -67,22 +66,23 @@
   let allEntries = [], currentPage = 1, rowsPerPage = 20;
 
   function refreshData() {
-    Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv', {
-      download: true,
-      header: true,
-      complete: function(results) {
-        allEntries = results.data;
+    fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv')
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.trim().split("\n").map(r => r.split(","));
+        allEntries = rows.slice(1).map(r => ({
+          date: r[0], wallet: r[1], closing: r[2], note: r[3], userCode: r[4], staffName: r[5]
+        }));
         populateFilters(allEntries);
         renderTablePage();
-      }
-    });
+      });
   }
 
   function populateFilters(entries) {
     const walletSet = new Set(), staffSet = new Set();
     entries.forEach(r => {
-      walletSet.add(r["Wallet"]);
-      staffSet.add(r["Staff Name"]);
+      walletSet.add(r.wallet);
+      staffSet.add(r.staffName);
     });
     const walletSel = document.getElementById("walletFilter");
     const staffSel = document.getElementById("staffFilter");
@@ -97,10 +97,10 @@
     const to = document.getElementById("toDate").value;
     const wallet = document.getElementById("walletFilter").value;
     const staff = document.getElementById("staffFilter").value;
-    if (from && row["Date"] < from) return false;
-    if (to && row["Date"] > to) return false;
-    if (wallet && row["Wallet"] !== wallet) return false;
-    if (staff && row["Staff Name"].trim().toLowerCase() !== staff.trim().toLowerCase()) return false;
+    if (from && row.date < from) return false;
+    if (to && row.date > to) return false;
+    if (wallet && row.wallet !== wallet) return false;
+    if (staff && row.staffName.trim().toLowerCase() !== staff.trim().toLowerCase()) return false;
     return true;
   }
 
@@ -108,13 +108,13 @@
     const tbody = document.querySelector("#entryTable tbody");
     tbody.innerHTML = "";
     const filtered = allEntries.filter(applyFilters);
-    const total = filtered.reduce((sum, r) => sum + parseFloat(r["Closing"] || 0), 0);
+    const total = filtered.reduce((sum, r) => sum + parseFloat(r.closing || 0), 0);
     document.getElementById("totalBox").innerText = `Total: ₹${total.toLocaleString()}`;
     const start = (currentPage - 1) * rowsPerPage;
     const pageItems = filtered.slice(start, start + rowsPerPage);
     pageItems.forEach(r => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r["Date"]}</td><td>${r["Wallet"]}</td><td>${r["Closing"]}</td><td>${r["Note"]}</td><td>${r["Staff Code"]}</td><td>${r["Staff Name"]}</td>`;
+      tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.userCode}</td><td>${r.staffName}</td>`;
       tbody.appendChild(tr);
     });
     const totalPages = Math.ceil(filtered.length / rowsPerPage);
@@ -181,6 +181,7 @@
     else refreshData();
   };
 
+  // Refilter on change
   ["walletFilter","staffFilter","fromDate","toDate"].forEach(id =>
     document.getElementById(id).addEventListener("change", () => { currentPage = 1; renderTablePage(); }));
 </script>
