@@ -1,110 +1,113 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <script>
-    if (!localStorage.getItem('staffUsers')) {
-      const users = {};
-      for (let i = 1; i <= 10; i++) {
-        const id = i.toString().padStart(3, '0');
-        users[id] = id;
-      }
-      localStorage.setItem('staffUsers', JSON.stringify(users));
-    }
-  </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Prakalya Netzone</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f0f4f7;
+    body {{
+      font-family: Arial;
+      background: #eef3f9;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
-      flex-direction: column;
-    }
-    h1 {
-      color: #0056d6;
-      margin-bottom: 30px;
-    }
-    .login-box {
+    }}
+    .login-box {{
       background: white;
       padding: 30px;
-      border-radius: 15px;
+      border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 90%;
+      width: 100%;
       max-width: 400px;
-    }
-    .login-box input {
+    }}
+    input {{
       width: 100%;
       padding: 12px;
       margin: 10px 0;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-    }
-    .login-box button {
+    }}
+    button {{
       width: 100%;
       padding: 12px;
-      background-color: #0056d6;
+      background: #0056d6;
       color: white;
       border: none;
-      border-radius: 8px;
       font-weight: bold;
+      border-radius: 6px;
+    }}
+    h2 {{
+      text-align: center;
+      color: #0056d6;
+    }}
+    a {{
+      color: #0056d6;
       cursor: pointer;
-    }
-    .login-box button:hover {
-      background-color: #003d9a;
-    }
+      text-decoration: none;
+    }}
   </style>
 </head>
 <body>
-  <h1>PRAKALYA NETZONE</h1>
   <div class="login-box">
-    <input type="text" id="userid" placeholder="User ID" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button onclick="login()">Login</button>
+    <h2>PRAKALYA NETZONE</h2>
+    <form onsubmit="return login(event)">
+      <input id="userid" type="text" placeholder="User ID" required />
+      <input id="password" type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p style="text-align:center;margin-top:10px;">
+      <a onclick="showBossReset()">🔑 Forgot Boss Password?</a>
+    </p>
+    <div id="bossResetBox" style="display:none;margin-top:10px;text-align:center;">
+      <input type="password" id="newBossPassword" placeholder="Enter new boss password"
+             style="padding:10px;width:80%;margin:5px auto;" />
+      <br />
+      <button onclick="resetBossPassword()"
+              style="background:#0056d6;color:white;padding:10px 20px;border:none;border-radius:5px;">
+        Reset Password
+      </button>
+    </div>
   </div>
 
   <script>
-    
-    // Preload staffUsers 001 to 010 with matching passwords
-    if (!localStorage.getItem('staffUsers')) {
-      const staffUsers = {};
-      for (let i = 1; i <= 10; i++) {
-        const id = i.toString().padStart(3, '0');
-        staffUsers[id] = id;
-      }
-      localStorage.setItem('staffUsers', JSON.stringify(staffUsers));
-    }
+    const defaultBossUser = "Murugesan";
 
-    function login() {
-      const user = document.getElementById('userid').value.trim();
-      const pass = document.getElementById('password').value.trim();
+    function login(e) {{
+      e.preventDefault();
+      const user = document.getElementById("userid").value;
+      const pass = document.getElementById("password").value;
 
-      if (!user || !pass) {
-        alert('Enter both ID and password');
+      const bossPassword = localStorage.getItem("bossPassword") || "Muru@2025";
+
+      if (user === defaultBossUser && pass === bossPassword) {{
+        sessionStorage.setItem("role", "boss");
+        window.location.href = "dashboard.html";
         return;
-      }
+      }}
 
-      // Boss Login (hardcoded)
-      if (user === 'Murugesan' && pass === 'Muru@2025') {
-        sessionStorage.setItem('role', 'boss');
-        window.location.href = 'dashboard.html';
+      const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{{}}");
+      if (staffUsers[user] && staffUsers[user] === pass) {{
+        sessionStorage.setItem("role", "staff");
+        sessionStorage.setItem("userCode", user);
+        window.location.href = "entry.html";
         return;
-      }
+      }}
 
-      // Check from local storage (staff login validation)
-      const users = JSON.parse(localStorage.getItem('staffUsers')) || {};
-      if (users[user] && users[user] === pass) {
-        sessionStorage.setItem('role', 'staff');
-        sessionStorage.setItem('userCode', user);
-        window.location.href = 'entry.html';
-      } else {
-        alert('Invalid login credentials');
-      }
-    }
+      alert("Invalid credentials.");
+    }}
+
+    function showBossReset() {{
+      document.getElementById("bossResetBox").style.display = "block";
+    }}
+
+    function resetBossPassword() {{
+      const newPass = document.getElementById("newBossPassword").value.trim();
+      if (!newPass) return alert("Please enter a new password");
+      localStorage.setItem("bossPassword", newPass);
+      alert("Boss password has been updated.");
+      document.getElementById("bossResetBox").style.display = "none";
+    }}
   </script>
 </body>
 </html>
