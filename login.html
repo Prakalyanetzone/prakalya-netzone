@@ -163,6 +163,19 @@
       document.getElementById("bossResetBox").style.display = "none";
       document.getElementById("otpVerifiedBox").style.display = "none";
     }
-  </script>
+  
+window.onload = () => {
+  fetch("https://script.google.com/macros/s/AKfycbxr8t_7KjmEO8LCPCfJ2ssDMpjw2dFoYHOrcK46o-oLg6LXVXlsUKkacD9VcFMorOcpqA/exec", {
+    method: "POST",
+    body: new URLSearchParams({ action: "getStaffUsers" })
+  })
+  .then(res => res.json())
+  .then(users => {
+    localStorage.setItem("staffUsers", JSON.stringify(users));
+    console.log("Staff list synced from Google Sheet.");
+  });
+};
+
+</script>
 </body>
 </html>
