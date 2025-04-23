@@ -164,6 +164,9 @@
       document.getElementById("otpVerifiedBox").style.display = "none";
     }
   
+
+let staffUsersLoaded = false;
+
 window.onload = () => {
   fetch("https://script.google.com/macros/s/AKfycbxr8t_7KjmEO8LCPCfJ2ssDMpjw2dFoYHOrcK46o-oLg6LXVXlsUKkacD9VcFMorOcpqA/exec", {
     method: "POST",
@@ -172,9 +175,37 @@ window.onload = () => {
   .then(res => res.json())
   .then(users => {
     localStorage.setItem("staffUsers", JSON.stringify(users));
-    console.log("Staff list synced from Google Sheet.");
+    staffUsersLoaded = true;
+    console.log("Staff list synced.");
   });
 };
+
+function login(e) {
+  e.preventDefault();
+  if (!staffUsersLoaded) return alert("Loading staff data. Please wait a moment.");
+
+  const user = document.getElementById("userid").value;
+  const pass = document.getElementById("password").value;
+
+  const bossPassword = localStorage.getItem("bossPassword") || "Muru@2025";
+
+  if (user === defaultBossUser && pass === bossPassword) {
+    sessionStorage.setItem("role", "boss");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  const staffUsers = JSON.parse(localStorage.getItem("staffUsers") || "{}");
+  if (staffUsers[user] && staffUsers[user] === pass) {
+    sessionStorage.setItem("role", "staff");
+    sessionStorage.setItem("userCode", user);
+    window.location.href = "entry.html";
+    return;
+  }
+
+  alert("Invalid credentials.");
+}
+
 
 </script>
 </body>
