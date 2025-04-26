@@ -75,7 +75,7 @@
 <option value="SARAVANAN CREDIT WALLET">SARAVANAN CREDIT WALLET</option>
 <option value="GPAY SETTLEMENT WALLET">GPAY SETTLEMENT WALLET</option>
 <option value="SARAVANA BINGO WALLET">SARAVANA BINGO WALLET</option>
-<option value="IOB SATHYA WALLET">IOB SATHYA WALLET</option><option value="OD MURUGESAN WALLET">OD MURUGESAN WALLET</option></select>
+</select>
 <input id="closing" placeholder="Closing Balance" required="" type="number"/>
 <textarea id="note" placeholder="Notes (if any)"></textarea>
 <input id="staffName" placeholder="Enter Your Name" required="" type="text"/>
@@ -106,7 +106,7 @@
     data.append('userCode', userCode);
     data.append('staffName', staffName);
 
-    fetch('https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec', {
+    fetch('https://script.google.com/macros/s/AKfycbxr8t_7KjmEO8LCPCfJ2ssDMpjw2dFoYHOrcK46o-oLg6LXVXlsUKkacD9VcFMorOcpqA/exec', {
       method: 'POST',
       body: data
     })
