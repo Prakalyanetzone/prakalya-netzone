@@ -53,29 +53,7 @@
 <form id="entryForm" onsubmit="submitEntry(); return false;">
 <div class="entry-box">
 <input id="date" required="" type="date"/>
-<select id="wallet" required="">
-<option value="">Select Wallet</option>
-<option value="BOB SATHYA WALLET">BOB SATHYA WALLET</option>
-<option value="HDFC MURUGESAN WALLET">HDFC MURUGESAN WALLET</option>
-<option value="SBI WALLET">SBI WALLET</option>
-<option value="SURIYA GPAY WALLET">SURIYA GPAY WALLET</option>
-<option value="CSC MURUGESAN WALLET">CSC MURUGESAN WALLET</option>
-<option value="BOB MURUGESAN WALLET">BOB MURUGESAN WALLET</option>
-<option value="ROI NET MURUGESAN WALLET">ROI NET MURUGESAN WALLET</option>
-<option value="IOB MURUGESAN WALLET">IOB MURUGESAN WALLET</option>
-<option value="CSC SATHYA WALLET">CSC SATHYA WALLET</option>
-<option value="ROI NET PRASANNA WALLET">ROI NET PRASANNA WALLET</option>
-<option value="ROINET SATHYA WALLET">ROINET SATHYA WALLET</option>
-<option value="SBI PRASANNA WALLET">SBI PRASANNA WALLET</option>
-<option value="INDIAN OVERSEAS BANK WALLET">INDIAN OVERSEAS BANK WALLET</option>
-<option value="TNESVAI WALLET">TNESVAI WALLET</option>
-<option value="PAY BINGO WALLET">PAY BINGO WALLET</option>
-<option value="MOS WALLET">MOS WALLET</option>
-<option value="BARODA FASTTAG WALLET">BARODA FASTTAG WALLET</option>
-<option value="SARAVANAN CREDIT WALLET">SARAVANAN CREDIT WALLET</option>
-<option value="GPAY SETTLEMENT WALLET">GPAY SETTLEMENT WALLET</option>
-<option value="SARAVANA BINGO WALLET">SARAVANA BINGO WALLET</option>
-</select>
+<select id="wallet" required=""><option value="">Select Wallet</option><option value="BARODA FASTTAG WALLET">BARODA FASTTAG WALLET</option><option value="BOB MURUGESAN WALLET">BOB MURUGESAN WALLET</option><option value="BOB SATHYA WALLET">BOB SATHYA WALLET</option><option value="CSC MURUGESAN WALLET">CSC MURUGESAN WALLET</option><option value="CSC SATHYA WALLET">CSC SATHYA WALLET</option><option value="GPAY SETTLEMENT WALLET">GPAY SETTLEMENT WALLET</option><option value="HDFC MURUGESAN WALLET">HDFC MURUGESAN WALLET</option><option value="INDIAN OVERSEAS BANK WALLET">INDIAN OVERSEAS BANK WALLET</option><option value="IOB MURUGESAN WALLET">IOB MURUGESAN WALLET</option><option value="IOB SATHYA WALLET">IOB SATHYA WALLET</option><option value="MOS WALLET">MOS WALLET</option><option value="OD MURUGESAN WALLET">OD MURUGESAN WALLET</option><option value="PAY BINGO WALLET">PAY BINGO WALLET</option><option value="ROI NET MURUGESAN WALLET">ROI NET MURUGESAN WALLET</option><option value="ROI NET PRASANNA WALLET">ROI NET PRASANNA WALLET</option><option value="ROINET SATHYA WALLET">ROINET SATHYA WALLET</option><option value="SARAVANA BINGO WALLET">SARAVANA BINGO WALLET</option><option value="SARAVANAN CREDIT WALLET">SARAVANAN CREDIT WALLET</option><option value="SBI PRASANNA WALLET">SBI PRASANNA WALLET</option><option value="SBI WALLET">SBI WALLET</option><option value="SURIYA GPAY WALLET">SURIYA GPAY WALLET</option><option value="TNESVAI WALLET">TNESVAI WALLET</option></select>
 <input id="closing" placeholder="Closing Balance" required="" type="number"/>
 <textarea id="note" placeholder="Notes (if any)"></textarea>
 <input id="staffName" placeholder="Enter Your Name" required="" type="text"/>
@@ -106,7 +84,7 @@
     data.append('userCode', userCode);
     data.append('staffName', staffName);
 
-    fetch('https://script.google.com/macros/s/AKfycbxr8t_7KjmEO8LCPCfJ2ssDMpjw2dFoYHOrcK46o-oLg6LXVXlsUKkacD9VcFMorOcpqA/exec', {
+    fetch('https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec', {
       method: 'POST',
       body: data
     })
