@@ -1,11 +1,12 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Staff Entry - Prakalya Netzone</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Entry - Prakalya Netzone</title>
+<style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -50,11 +51,11 @@
 <body>
 <h1>PRAKALYA NETZONE</h1>
 <form id="entryForm" onsubmit="submitEntry(); return false;">
-  <div class="entry-box">
-    <input id="date" required type="date"/>
-    <select id="wallet" required>
-      <option value="">Select Wallet</option>
-      <option value="BOB SATHYA WALLET">BOB SATHYA WALLET</option>
+<div class="entry-box">
+<input id="date" required="" type="date"/>
+<select id="wallet" required="">
+<option value="">Select Wallet</option>
+<option value="BOB SATHYA WALLET">BOB SATHYA WALLET</option>
 <option value="HDFC MURUGESAN WALLET">HDFC MURUGESAN WALLET</option>
 <option value="SBI WALLET">SBI WALLET</option>
 <option value="SURIYA GPAY WALLET">SURIYA GPAY WALLET</option>
@@ -74,17 +75,14 @@
 <option value="SARAVANAN CREDIT WALLET">SARAVANAN CREDIT WALLET</option>
 <option value="GPAY SETTLEMENT WALLET">GPAY SETTLEMENT WALLET</option>
 <option value="SARAVANA BINGO WALLET">SARAVANA BINGO WALLET</option>
-<option value="SARAVANA BINGO WALLET">IOB SATHYA WALLET</option>
-<option value="SARAVANA BINGO WALLET">OD MURUGESAN WALLET</option>
-    </select>
-    <input id="closing" placeholder="Closing Balance" required type="number"/>
-    <textarea id="note" placeholder="Notes (if any)"></textarea>
-    <input id="staffName" placeholder="Enter Your Name" required type="text"/>
-    <button type="submit">Submit</button>
-    <button type="button" onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;">Logout</button>
-  </div>
+<option value="IOB SATHYA WALLET">IOB SATHYA WALLET</option><option value="OD MURUGESAN WALLET">OD MURUGESAN WALLET</option></select>
+<input id="closing" placeholder="Closing Balance" required="" type="number"/>
+<textarea id="note" placeholder="Notes (if any)"></textarea>
+<input id="staffName" placeholder="Enter Your Name" required="" type="text"/>
+<button type="submit">Submit</button>
+<button onclick="logout()" style="margin-top:10px;background:#ccc;color:#000;" type="button">Logout</button>
+</div>
 </form>
-
 <script>
   const userCode = "001"; // Replace with sessionStorage.getItem('userCode') if using login
 
