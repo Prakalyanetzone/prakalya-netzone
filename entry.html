@@ -74,6 +74,8 @@
 <option value="SARAVANAN CREDIT WALLET">SARAVANAN CREDIT WALLET</option>
 <option value="GPAY SETTLEMENT WALLET">GPAY SETTLEMENT WALLET</option>
 <option value="SARAVANA BINGO WALLET">SARAVANA BINGO WALLET</option>
+<option value="SARAVANA BINGO WALLET">IOB SATHYA WALLET</option>
+<option value="SARAVANA BINGO WALLET">OD MURUGESAN WALLET</option>
     </select>
     <input id="closing" placeholder="Closing Balance" required type="number"/>
     <textarea id="note" placeholder="Notes (if any)"></textarea>
@@ -111,10 +113,10 @@
       body: data
     })
     .then(() => {
-      alert('Entry submitted successfully'); document.getElementById('entryForm').reset();
+      alert('Entry submitted successfully');
       document.getElementById('entryForm').reset();
     }).catch(() => {
-      alert('Submitted! (Note: Response blocked, but entry succeeded)'); document.getElementById('entryForm').reset();
+      alert('Submitted! (Note: Response blocked, but entry succeeded)');
     });
   }
 
