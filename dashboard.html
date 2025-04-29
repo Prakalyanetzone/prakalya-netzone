@@ -168,7 +168,7 @@ function saveEdit() {
   }).then(res => res.text())
     .then(txt => {
       if (txt === "success") {
-        alert("✅ Updated!");
+        alert("✅ Google Sheet updated successfully!");
         refreshData();
       } else {
         alert("❌ Update failed: " + txt);
