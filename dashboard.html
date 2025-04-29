@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Boss Dashboard - Prakalya Netzone</title>
+  <title>Boss Dashboard - Prakalya Netzone (Final)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -39,6 +39,7 @@
 </head>
 <body>
   <h1>PRAKALYA NETZONE</h1>
+
   <div class="filters">
     <label>From: <input type="date" id="fromDate" /></label>
     <label>To: <input type="date" id="toDate" /></label>
@@ -51,31 +52,20 @@
     <button onclick="refreshData()">🔁 Refresh</button>
     <button onclick="filterToday()">📅 Today</button>
     <button onclick="printEntries()">📋 Print</button>
-    <button onclick="exportExcel()">📤 Export to Excel</button>
-    <button onclick="exportPDF()">📤 Export to PDF</button>
+    <button onclick="exportExcel()">📤 Excel</button>
+    <button onclick="exportPDF()">📤 PDF</button>
     <button onclick="showReset()">🔐 Reset Password</button>
     <button onclick="showBossReset()">🧑‍💼 Boss Password</button>
     <button onclick="logout()">🚪 Logout</button>
     <div id="totalBox">Total: ₹0</div>
   </div>
 
-  <div class="password-box" id="bossPasswordBox" style="display:none;">
-    <h3>🧑‍💼 Reset Boss Password</h3>
-    <input type="password" id="bossNewPassword" placeholder="New Boss Password" />
-    <button onclick="resetBossPassword()">Update</button>
-  </div>
-
   <div class="table-box">
     <table id="entryTable">
-      <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Name</th><th>Action</th></tr></thead>
+      <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Name</th><th>Last Updated</th><th>Action</th></tr></thead>
       <tbody></tbody>
     </table>
     <div id="pagination"></div>
-  </div>
-
-  <div class="password-box" id="passwordBox" style="display:none;">
-    <h3>👥 Reset Staff Passwords</h3>
-    <div id="passwordList"></div>
   </div>
 
   <div class="modal" id="editModal">
@@ -99,7 +89,7 @@ function refreshData() {
     .then(csv => {
       const rows = csv.trim().split("\n").map(r => r.split(","));
       allEntries = rows.slice(1).map(r => ({
-        date: r[0], wallet: r[1], closing: r[2], note: r[3], userCode: r[4], staffName: r[5]
+        date: r[0], wallet: r[1], closing: r[2], note: r[3], staffName: r[5], lastUpdated: r[6] || ""
       })).reverse();
       populateFilters(allEntries);
       renderTablePage();
@@ -112,8 +102,8 @@ function populateFilters(entries) {
     walletSet.add(r.wallet);
     staffSet.add(r.staffName);
   });
-  document.getElementById("walletFilter").innerHTML = "<option value=''>All Wallets</option>";
-  document.getElementById("staffFilter").innerHTML = "<option value=''>All Staff</option>";
+  walletFilter.innerHTML = "<option value=''>All Wallets</option>";
+  staffFilter.innerHTML = "<option value=''>All Staff</option>";
   [...walletSet].sort().forEach(w => walletFilter.innerHTML += `<option value="${w}">${w}</option>`);
   [...staffSet].sort().forEach(s => staffFilter.innerHTML += `<option value="${s}">${s}</option>`);
 }
@@ -133,13 +123,13 @@ function renderTablePage() {
   tbody.innerHTML = "";
   const filtered = allEntries.filter(applyFilters);
   const total = filtered.reduce((sum, r) => sum + parseFloat(r.closing || 0), 0);
-  document.getElementById("totalBox").innerText = `Total: ₹${total.toLocaleString()}`;
+  totalBox.innerText = `Total: ₹${total.toLocaleString()}`;
   const start = (currentPage - 1) * rowsPerPage;
   const pageItems = filtered.slice(start, start + rowsPerPage);
   pageItems.forEach((r, i) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.staffName}</td>
-      <td><button onclick="openEdit(${start + i})">✏️</button></td>`;
+    tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.staffName}</td><td>${r.lastUpdated}</td>
+      <td><button onclick="openEdit(${start + i})">✏️</button> <button onclick="confirmDelete(${start + i})">❌</button></td>`;
     tbody.appendChild(tr);
   });
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
@@ -151,25 +141,61 @@ function renderTablePage() {
 
 function openEdit(index) {
   editIndex = index;
-  const entry = allEntries[index];
-  document.getElementById("editClosing").value = entry.closing;
-  document.getElementById("editNote").value = entry.note;
-  document.getElementById("editModal").style.display = "flex";
+  editClosing.value = allEntries[index].closing;
+  editNote.value = allEntries[index].note;
+  editModal.style.display = "flex";
 }
 
 function closeEdit() {
-  document.getElementById("editModal").style.display = "none";
+  editModal.style.display = "none";
 }
 
 function saveEdit() {
-  const closing = document.getElementById("editClosing").value;
-  const note = document.getElementById("editNote").value;
-  if (!closing) return alert("Enter closing value");
-  allEntries[editIndex].closing = closing;
-  allEntries[editIndex].note = note;
+  const closing = editClosing.value;
+  const note = editNote.value;
+  if (!closing) return alert("Enter closing");
+
+  fetch("https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "editEntry",
+      date: allEntries[editIndex].date,
+      wallet: allEntries[editIndex].wallet,
+      staffName: allEntries[editIndex].staffName,
+      closing: closing,
+      note: note
+    })
+  }).then(res => res.text())
+    .then(txt => {
+      if (txt === "success") {
+        alert("✅ Updated!");
+        refreshData();
+      } else {
+        alert("❌ Update failed: " + txt);
+      }
+    });
   closeEdit();
-  renderTablePage();
-  alert("Entry updated on screen. (Google Sheet update integration is next)");
+}
+
+function confirmDelete(index) {
+  if (!confirm("Are you sure you want to delete this entry?")) return;
+  fetch("https://script.google.com/macros/s/AKfycby-Vq3tAHTStJzM5nCh5zpIv03DW5jRhFnVQXFnVj253OlAVRBpvclqgFaVPPEiqjDc/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "deleteEntry",
+      date: allEntries[index].date,
+      wallet: allEntries[index].wallet,
+      staffName: allEntries[index].staffName
+    })
+  }).then(res => res.text())
+    .then(txt => {
+      if (txt === "deleted") {
+        alert("✅ Entry deleted!");
+        refreshData();
+      } else {
+        alert("❌ Delete failed: " + txt);
+      }
+    });
 }
 
 function filterToday() {
@@ -180,8 +206,7 @@ function filterToday() {
 
 function printEntries() { window.print(); }
 function exportExcel() {
-  const table = document.getElementById("entryTable");
-  const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+  const wb = XLSX.utils.table_to_book(document.getElementById("entryTable"), {sheet: "Sheet1"});
   XLSX.writeFile(wb, "dashboard_data.xlsx");
 }
 function exportPDF() {
@@ -194,42 +219,19 @@ function exportPDF() {
 
 function showReset() {
   passwordBox.style.display = "block";
-  const users = JSON.parse(localStorage.getItem("staffUsers") || "{}");
-  passwordList.innerHTML = Object.entries(users).map(([id, pw]) =>
-    `<div>${id}: <input type="text" id="pw_${id}" placeholder="New Password" />
-    <button onclick="resetPassword('${id}')">Reset</button></div>`).join("");
 }
-
-function resetPassword(id) {
-  const val = document.getElementById("pw_" + id).value;
-  if (!val) return alert("Enter new password");
-  const users = JSON.parse(localStorage.getItem("staffUsers") || "{}");
-  users[id] = val;
-  localStorage.setItem("staffUsers", JSON.stringify(users));
-  alert("Password updated for " + id);
+function showBossReset() {
+  bossPasswordBox.style.display = "block";
 }
-
 function logout() {
   sessionStorage.clear();
   window.location.href = "login.html";
 }
-
-function showBossReset() {
-  bossPasswordBox.style.display = "block";
-}
-function resetBossPassword() {
-  const pass = bossNewPassword.value;
-  if (!pass) return alert("Enter new boss password");
-  localStorage.setItem("bossPassword", pass);
-  alert("Boss password updated.");
-}
-
 window.onload = () => {
   if (sessionStorage.getItem("role") !== "boss") window.location.href = "index.html";
   else refreshData();
 };
-["walletFilter","staffFilter","fromDate","toDate"].forEach(id =>
-  document.getElementById(id).addEventListener("change", () => { currentPage = 1; renderTablePage(); }));
+["walletFilter","staffFilter","fromDate","toDate"].forEach(id => document.getElementById(id).addEventListener("change", () => { currentPage = 1; renderTablePage(); }));
 </script>
 </body>
 </html>
