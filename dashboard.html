@@ -1,210 +1,81 @@
 
 <!DOCTYPE html>
-
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Boss Dashboard - Prakalya Netzone</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<style>
+  <meta charset="UTF-8" />
+  <title>Boss Dashboard - Edit Feature</title>
+  <style>
     body { font-family: Arial; background: #eef3f9; padding: 20px; }
-    h1 { text-align: center; color: #0056d6; }
-    .filters, .table-box, .password-box {
-      max-width: 1000px; margin: auto; background: white;
-      padding: 20px; margin-top: 20px;
-      border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      margin: 5px; padding: 10px; border-radius: 5px; border: 1px solid #ccc;
-    }
-    table {
-      width: 100%; border-collapse: collapse; margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ccc; padding: 8px; text-align: center;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #dceeff; }
-    #totalBox { margin-top: 10px; text-align: right; font-weight: bold; }
-    #pagination { text-align: center; margin-top: 15px; }
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: white; padding: 20px; border-radius: 10px; width: 300px;
+    }
+    input, button {
+      padding: 8px; width: 100%; margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-<h1>PRAKALYA NETZONE</h1>
-<div class="filters">
-<label>From: <input id="fromDate" type="date"/></label>
-<label>To: <input id="toDate" type="date"/></label>
-<label>Wallet:
-      <select id="walletFilter"><option value="">All Wallets</option></select>
-</label>
-<label>Staff:
-      <select id="staffFilter"><option value="">All Staff</option></select>
-</label>
-<button onclick="refreshData()">🔁 Refresh</button>
-<button onclick="filterToday()">📅 Today</button>
-<button onclick="printEntries()">📋 Print</button>
-<button onclick="exportExcel()">📤 Export to Excel</button>
-<button onclick="exportPDF()">📤 Export to PDF</button>
-<button onclick="showReset()">🔐 Reset Password</button>
-<button onclick="showBossReset()">🧑‍💼 Boss Password</button>
-<button onclick="logout()">🚪 Logout</button>
-<div id="totalBox">Total: ₹0</div>
-</div>
-<div class="password-box" id="bossPasswordBox" style="display:none;">
-<h3>🧑‍💼 Reset Boss Password</h3>
-<div>
-<input id="bossNewPassword" placeholder="New Boss Password" type="password"/>
-<button onclick="resetBossPassword()">Update</button>
-</div>
-</div>
-<div class="table-box">
-<table id="entryTable">
-<thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th></tr></thead>
-<tbody></tbody>
-</table>
-<div id="pagination"></div>
-</div>
-<div class="password-box" id="passwordBox" style="display:none;">
-<h3>👥 Reset Staff Passwords</h3>
-<div id="passwordList"></div>
-</div>
-<script>
-  let allEntries = [], currentPage = 1, rowsPerPage = 20;
+  <h1>PRAKALYA NETZONE - Boss Dashboard</h1>
+  <table id="entryTable">
+    <thead>
+      <tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>2025-04-28</td>
+        <td>HDFC WALLET</td>
+        <td>15000</td>
+        <td>Wrong entry</td>
+        <td>001</td>
+        <td><button onclick="openEdit(this)">✏️ Edit</button></td>
+      </tr>
+    </tbody>
+  </table>
 
-  function refreshData() {
-    fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQnslASO3h9zdwLZrybq3Vn53gX6JEI8uhRXb5N4UFjcVKBkVeh02r5Y7LRBBXXQRp9gWm2Ke5Iujd8/pub?output=csv')
-      .then(res => res.text())
-      .then(csv => {
-        const rows = csv.trim().split("\n").map(r => r.split(","));
-        allEntries = rows.slice(1).map(r => ({
-          date: r[0], wallet: r[1], closing: r[2], note: r[3], userCode: r[4], staffName: r[5]
-        }));
-        allEntries.reverse();
-        populateFilters(allEntries);
-        renderTablePage();
-      });
-  }
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Entry</h3>
+      <label>Closing:</label>
+      <input type="number" id="editClosing" />
+      <label>Note:</label>
+      <input type="text" id="editNote" />
+      <button onclick="saveEdit()">✅ Save</button>
+      <button onclick="closeEdit()">❌ Cancel</button>
+    </div>
+  </div>
 
-  function populateFilters(entries) {
-    const walletSet = new Set(), staffSet = new Set();
-    entries.forEach(r => {
-      walletSet.add(r.wallet);
-      staffSet.add(r.staffName);
-    });
-    const walletSel = document.getElementById("walletFilter");
-    const staffSel = document.getElementById("staffFilter");
-    walletSel.innerHTML = "<option value=''>All Wallets</option>";
-    staffSel.innerHTML = "<option value=''>All Staff</option>";
-    [...walletSet].sort().forEach(w => walletSel.innerHTML += `<option value="${w}">${w}</option>`);
-    [...staffSet].sort().forEach(s => staffSel.innerHTML += `<option value="${s}">${s}</option>`);
-  }
+  <script>
+    let editRow = null;
 
-  function applyFilters(row) {
-    const from = document.getElementById("fromDate").value;
-    const to = document.getElementById("toDate").value;
-    const wallet = document.getElementById("walletFilter").value;
-    const staff = document.getElementById("staffFilter").value;
-    if (from && row.date < from) return false;
-    if (to && row.date > to) return false;
-    if (wallet && row.wallet !== wallet) return false;
-    if (staff && row.staffName.trim().toLowerCase() !== staff.trim().toLowerCase()) return false;
-    return true;
-  }
+    function openEdit(button) {
+      editRow = button.parentElement.parentElement;
+      const closing = editRow.children[2].innerText;
+      const note = editRow.children[3].innerText;
+      document.getElementById("editClosing").value = closing;
+      document.getElementById("editNote").value = note;
+      document.getElementById("editModal").style.display = "flex";
+    }
 
-  function renderTablePage() {
-    const tbody = document.querySelector("#entryTable tbody");
-    tbody.innerHTML = "";
-    const filtered = allEntries.filter(applyFilters);
-    const total = filtered.reduce((sum, r) => sum + parseFloat(r.closing || 0), 0);
-    document.getElementById("totalBox").innerText = `Total: ₹${total.toLocaleString()}`;
-    const start = (currentPage - 1) * rowsPerPage;
-    const pageItems = filtered.slice(start, start + rowsPerPage);
-    pageItems.forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.userCode}</td><td>${r.staffName}</td>`;
-      tbody.appendChild(tr);
-    });
-    const totalPages = Math.ceil(filtered.length / rowsPerPage);
-    const pagin = document.getElementById("pagination");
-    pagin.innerHTML = `
-      <button ${currentPage === 1 ? "disabled" : ""} onclick="currentPage--; renderTablePage()">Previous</button>
-      Page ${currentPage} of ${totalPages}
-      <button ${currentPage === totalPages ? "disabled" : ""} onclick="currentPage++; renderTablePage()">Next</button>
-    `;
-  }
+    function closeEdit() {
+      document.getElementById("editModal").style.display = "none";
+    }
 
-  function filterToday() {
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("fromDate").value = today;
-    document.getElementById("toDate").value = today;
-    currentPage = 1;
-    renderTablePage();
-  }
-
-  function printEntries() {
-    window.print();
-  }
-
-  function exportExcel() {
-    const table = document.getElementById("entryTable");
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-    XLSX.writeFile(wb, "dashboard_data.xlsx");
-  }
-
-  function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("Dashboard Entries", 14, 16);
-    doc.autoTable({ html: "#entryTable" });
-    doc.save("dashboard_data.pdf");
-  }
-
-  function showReset() {
-    document.getElementById("passwordBox").style.display = "block";
-    const users = JSON.parse(localStorage.getItem("staffUsers") || "{}");
-    const list = Object.entries(users).map(([id, pw]) =>
-      `<div>${id}: <input type="text" id="pw_${id}" placeholder="New Password" />
-       <button onclick="resetPassword('${id}')">Reset</button></div>`
-    ).join("");
-    document.getElementById("passwordList").innerHTML = list;
-  }
-
-  function resetPassword(id) {
-    const val = document.getElementById("pw_" + id).value;
-    if (!val) return alert("Enter new password");
-    const users = JSON.parse(localStorage.getItem("staffUsers") || "{}");
-    users[id] = val;
-    localStorage.setItem("staffUsers", JSON.stringify(users));
-    alert("Password updated for " + id);
-  }
-
-  function logout() {
-    sessionStorage.clear();
-    window.location.href = "login.html";
-  }
-
-  window.onload = () => {
-    if (sessionStorage.getItem("role") !== "boss") window.location.href = "index.html";
-    else refreshData();
-  };
-
-  
-  function showBossReset() {
-    document.getElementById("bossPasswordBox").style.display = "block";
-  }
-
-  function resetBossPassword() {
-    const pass = document.getElementById("bossNewPassword").value;
-    if (!pass) return alert("Enter new boss password");
-    localStorage.setItem("bossPassword", pass);
-    alert("Boss password updated.");
-  }
-
-  // Refilter on change
-  ["walletFilter","staffFilter","fromDate","toDate"].forEach(id =>
-    document.getElementById(id).addEventListener("change", () => { currentPage = 1; renderTablePage(); }));
-</script>
+    function saveEdit() {
+      const newClosing = document.getElementById("editClosing").value;
+      const newNote = document.getElementById("editNote").value;
+      if (!newClosing) return alert("Closing is required");
+      editRow.children[2].innerText = newClosing;
+      editRow.children[3].innerText = newNote;
+      closeEdit();
+      alert("Entry updated (Note: This change is only on-screen for now)");
+    }
+  </script>
 </body>
 </html>
