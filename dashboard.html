@@ -161,7 +161,7 @@ function saveEdit() {
       action: "editEntry",
       date: allEntries[editIndex].date,
       wallet: allEntries[editIndex].wallet,
-      staffName: allEntries[editIndex].staffName,
+      staffName: allEntries[editIndex].staffName.replace(/"/g, "").trim(),
       oldClosing: allEntries[editIndex].closing,
       closing: closing,
       note: note
