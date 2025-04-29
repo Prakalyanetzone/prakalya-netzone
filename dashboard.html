@@ -190,7 +190,7 @@ function confirmDelete(index) {
   }).then(res => res.text())
     .then(txt => {
       if (txt === "deleted") {
-        alert("✅ Entry deleted!");
+        alert("✅ Entry deleted successfully!");
         refreshData();
       } else {
         alert("❌ Delete failed: " + txt);
