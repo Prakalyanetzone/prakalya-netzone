@@ -67,7 +67,7 @@
 
   <div class="table-box">
     <table id="entryTable">
-      <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Code</th><th>Staff Name</th><th>Action</th></tr></thead>
+      <thead><tr><th>Date</th><th>Wallet</th><th>Closing</th><th>Note</th><th>Staff Name</th><th>Action</th></tr></thead>
       <tbody></tbody>
     </table>
     <div id="pagination"></div>
@@ -138,7 +138,7 @@ function renderTablePage() {
   const pageItems = filtered.slice(start, start + rowsPerPage);
   pageItems.forEach((r, i) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.userCode}</td><td>${r.staffName}</td>
+    tr.innerHTML = `<td>${r.date}</td><td>${r.wallet}</td><td>${r.closing}</td><td>${r.note}</td><td>${r.staffName}</td>
       <td><button onclick="openEdit(${start + i})">✏️</button></td>`;
     tbody.appendChild(tr);
   });
